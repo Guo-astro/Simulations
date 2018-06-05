@@ -1,0 +1,200 @@
+#+1474233773
+cd FDPS_repo/FDPS-master/sample/GSPH_relax_force_1e6/
+#+1474233939
+scancel 65830
+#+1474233996
+scancel 65831
+#+1474234198
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/0000.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUTl
+#+1474234335
+scancel 65832
+#+1474234472
+showq-slurm
+#+1474234826
+scontrol show job 65833
+#+1474235842
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/1475.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474238194
+cd Density_relax_single_timestep_1e6
+#+1474238355
+vi force.h
+#+1474238447
+vi class.h
+#+1474241978
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/2150.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474246316
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/2595.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474252526
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/3200.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474256751
+rm -rf BINOUT/*
+#+1474258168
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/3750.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474261495
+sstat --format=AveCPU,AvePages,AveRSS,AveVMSize,JobID -j 65811 --allsteps
+#+1474261516
+cd INIT_CONDS/
+#+1474261568
+cp 4000.dat ../INIT_CONDS/DENSITY_RELAXED_2e6.dat
+#+1474261577
+cp -f 4000.dat ../INIT_CONDS/DENSITY_RELAXED_2e6.dat
+#+1474261591
+cp -f 4070.dat ../INIT_CONDS/DENSITY_RELAXED_2e6.dat
+#+1474282353
+l
+#+1474282471
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/4880.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474282509
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/4880.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474282687
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/0712.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474282806
+cd Density_relax_single_timestep_1e6_restart/
+#+1474282895
+cp -f 4880.dat ../INIT_CONDS/DENSITY_RELAXED_2e6.dat
+#+1474282940
+vi integral.cpp
+#+1474283828
+vi runMPI.sh
+#+1474283851
+scp -r yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/GSPH_relax_force_1e6 /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474283873
+scp -r yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/sample/GSPH_relax_force_1e6/home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474283879
+scp -r yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/sample/GSPH_relax_force_1e6 /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474290541
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/1167.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT
+#+1474296800
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/1531.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474312810
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/2470.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474312847
+cd FDPS_repo/FDPS-master/sample/
+#+1474312859
+cd GSPH_relax_force_1e6
+#+1474323749
+cd FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_
+#+1474323783
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/3130.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474323805
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/3103.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474324866
+mkdir CO_0.2_0.4
+#+1474324874
+cd CO_0.2_0.4/
+#+1474324884
+mkdir vtk
+#+1474324890
+mkdir ascii
+#+1474324897
+mkdir bin
+#+1474330477
+cd src
+#+1474330535
+vi particle_system.hpp
+#+1474330667
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/3503.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474342694
+cd FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/
+#+1474342728
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/4140.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474349180
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/4474.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474354735
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/4766.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474356956
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/-001.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474357375
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/0000.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474357485
+cd FDPS-master/
+#+1474357587
+scancel 66007
+#+1474357593
+scancel 66006
+#+1474357719
+cd FDPS_repo/FDPS-master/HVCC/
+#+1474357968
+vi stderr.log
+#+1474358006
+vi Makefile
+#+1474358056
+make all
+#+1474373748
+cd FDPS_repo/FDPS-master/POLYTROPE_TESTS/
+#+1474373804
+rm -rf BINOUT_FORCE_RELAX/*
+#+1474373811
+cd BINOUT
+#+1474373977
+scp yansong.guo@192.168.5.163:/xc/home/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT_FORCE_RELAX/1660.dat /home/uchu/yansong.guo/FDPS_repo/FDPS-master/POLYTROPE_TESTS/BINOUT/
+#+1474378066
+ls -la ~
+#+1474378111
+vi ~/.bash_logout
+#+1474378118
+vi ~/.bash_profile
+#+1474378153
+cd FDPS_repo/
+#+1474378158
+cd FDPS-master/HVCC/
+#+1474378172
+cd POLYTROPE_TESTS/
+#+1474378181
+cd BINOUT_FORCE_RELAX/
+#+1474378230
+cd ..
+#+1474378258
+vi stdout.log
+#+1474378355
+vi init.cpp
+#+1474378417
+module swap PrgEnv-cray PrgEnv-gnu
+#+1474378420
+make
+#+1474378451
+sbatch runMPI.sh
+#+1474422545
+ssh xcfrint
+#+1474422557
+cd sample/
+#+1474422566
+cd GSPH_relax_force_1e6/
+#+1474422580
+rm stdout.log
+#+1474423374
+yitpinfo
+#+1474460067
+passwd
+#+1474460083
+chsh
+#+1474460232
+squeue
+#+1474460262
+cd FDPS_repo/FDPS-master/
+#+1474460268
+cd HVCC/
+#+1474460270
+cd HVCC_2e6_H20.9_MBH5/
+#+1474460278
+squeue -u yansong.guo
+#+1474460285
+scancel 66131
+#+1474460412
+cp /etc/skel/.bashrc $HOME/
+#+1487325365
+ssh-add ~/.ssh/id_rsa
+#+1487325372
+ll
+#+1487325377
+ls -a
+#+1487325382
+cd .ssh/
+#+1487325383
+ls
+#+1487325401
+ssh-add YUKAWA
+#+1487325432
+ssh xcront
+#+1487325439
+ssh xcfront
