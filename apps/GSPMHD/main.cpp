@@ -31,8 +31,10 @@ int main(int argc, char* argv[]) {
 
 	boundary box;
 	PS::F64 dt, end_time;
-	SetupICSphericalBlastWaves(sph_system, &end_time,&box);
+//	SetupICSphericalBlastWaves(sph_system, &end_time,&box);
 //	SetupIC(sph_system, &end_time,&box);
+//	SetupICSlowShock(sph_system, &end_time,&box);
+	SetupICToth(sph_system, &end_time,&box);
 	dinfo.initialize();
 
 	//////////////////
@@ -45,6 +47,8 @@ int main(int argc, char* argv[]) {
 	dinfo.setBoundaryCondition(PS::BOUNDARY_CONDITION_PERIODIC_XYZ);
 
 	dinfo.setPosRootDomain(PS::F64vec(-box.x, -box.y, 0.0), PS::F64vec(box.x,box.y,box.z));
+//	dinfo.setPosRootDomain(PS::F64vec(0, 0, 0.0), PS::F64vec(box.x,box.y,box.z));
+
 	Initialize(sph_system);
 	//Dom. info
 	dinfo.setDomain(PS::Comm::getNumberOfProc(), 1, 1);
@@ -106,6 +110,20 @@ int main(int argc, char* argv[]) {
 			char filename[256];
 			sprintf(filename, "result/%04d.dat", step);
 			sph_system.writeParticleAscii(filename, header);
+#ifdef OUTPUT_VTK
+			FileHeader header_vtk;
+			header_vtk.phy_time = time * PARAM::ST / PARAM::yr / 1e6;
+			header_vtk.Nbody = sph_system.getNumberOfParticleGlobal();
+			char filename_vtk[256];
+			sprintf(filename_vtk, "result_vtk/GSPMHD.vtk.%04d", step/PARAM::OUTPUT_INTERVAL);
+			sph_system.writeParticle_VTK_Ascii(filename_vtk, header_vtk);
+
+			if (PS::Comm::getRank() == 0) {
+				std::cout << "//================================" << std::endl;
+				std::cout << "output " << filename_vtk << "." << std::endl;
+				std::cout << "//================================" << std::endl;
+			}
+#endif
 			if (PS::Comm::getRank() == 0) {
 				std::cout << "//================================" << std::endl;
 				std::cout << "output " << filename << "." << std::endl;

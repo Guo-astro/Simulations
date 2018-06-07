@@ -141,12 +141,12 @@ public:
 class RealPtcl {
 public:
 	PS::F64 mass;
-	PS::F64vec pos, vel, acc;
+	PS::F64vec pos, old_pos, vel, old_vel, acc;
 	PS::F64vec extF;
 	PS::F64 dens; //DENSity
-	PS::F64 eng; //ENerGy
+	PS::F64 eng, old_eng; //ENerGy
 	PS::F64 pres; //PRESsure
-	PS::F64 smth; //SMooTHing length
+	PS::F64 smth, old_smth; //SMooTHing length
 	PS::F64 snds; //SouND Speed
 	PS::F64 Lambda;
 	PS::F64 Gamma;
@@ -187,10 +187,11 @@ public:
 	const char* scalars[PARAM::COMP + 11] = { "mass", "pres", "dens", "vx",
 			"vy", "vz", "T", "eng", "ab_e", "ab_HI", "ab_HeI", "ab_OI", "ab_CI",
 			"ab_H2", "ab_CO", "ab_HII", "ab_CII", "ab_FeII", "ab_SiII",
-			"cooling", "heating", "cooling_timescale" };
-	const char* vectors[3] = { "vel", "acc", "pos" };
+			"cooling", "heating", "cooling_timescale","MagneticB_x","MagneticB_y","MagneticB_z","intE" };
+	const char* vectors[3] = { "vel", "acc", "pos","MagneticB" };
 
 	PS::F64 abundances[PARAM::COMP];
+	PS::F64 old_abundances[PARAM::COMP];
 
 //Copy functions
 	void copyFromForce(const RESULT::Dens& dens) {
@@ -271,8 +272,11 @@ public:
 		//23 sg,24 bh,25 hydro 26 eng
 		//38 minus_eng
 		fprintf(fp,
-				"%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
-						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
+				"%lld"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
 				this->id, this->mass, this->smth, this->pos.x, this->pos.y,
 				this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens,
 				this->eng, this->pres, this->MagneticB.x, this->MagneticB.y,
@@ -283,7 +287,7 @@ public:
 				this->abundances[0], this->abundances[1], this->abundances[2],
 				this->abundances[3], this->abundances[4], this->abundances[5],
 				this->abundances[6], this->abundances[7], this->abundances[8],
-				this->abundances[9], mu, this->minus_eng);
+				this->abundances[9], mu);
 	}
 	void readAscii(FILE* fp) {
 #ifdef RESTART
@@ -293,12 +297,22 @@ public:
 		PS::F64 radialForce_grav_mag = this->grav * radial;
 		PS::F64 mu, tem, NUMDENS_CGS;
 		PS::S64 minus_eng;
+		PS::F64 radialForce_extF_mag;
+
 		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
 				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
 				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
-				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y, &this->pos.z, &this->vel.x, &this->vel.y,
-				&this->vel.z, &this->dens, &this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y, &this->MagneticB.z, &radial_mag, &radialForce_mag, &radialForce_grav_mag, &tem, &NUMDENS_CGS, &this->Lambda, &this->cooling_timescale ,&this->sg_timescale,&this->bh_timescale,&this->hydro_timescale,&this->eng_timescale,&this->abundances[0], &this->abundances[1], &this->abundances[2],
-				&this->abundances[3], &this->abundances[4], &this->abundances[5], &this->abundances[6], &this->abundances[7], &this->abundances[8], &this->abundances[9], &mu,&minus_eng);
+				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf",
+				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
+				&this->pos.z, &this->vel.x, &this->vel.y,&this->vel.z, &this->dens,
+				&this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y, &this->MagneticB.z,
+				&radial_mag, &radialForce_mag, &radialForce_grav_mag,& radialForce_extF_mag, &tem,
+				&NUMDENS_CGS, &this->Lambda, &this->cooling_timescale ,&this->sg_timescale,&this->bh_timescale,
+				&this->hydro_timescale,&this->eng_timescale,
+				&this->abundances[0], &this->abundances[1], &this->abundances[2],
+				&this->abundances[3], &this->abundances[4], &this->abundances[5],
+				&this->abundances[6], &this->abundances[7], &this->abundances[8],
+				&this->abundances[9], &mu);
 		if (this->eng < 0.0 || this->pres < 0.0) {
 			std::cout << pres << "in class.h readAscii" << eng<<" "<<dens << std::endl;
 
@@ -342,7 +356,8 @@ public:
 		GAMMA = 5./3.;
 		mu = 2.34;
 		eng = fitTEMP(NUMDENS_CGS) * PARAM::KBOLTZ_cgs * (1.1 + this->abundances[0] - this->abundances[5]) / ((GAMMA - 1.0) * mu * PARAM::PROTONMASS_CGS) / PARAM::SEng_per_Mass;
-//		std::cout << NUMDENS_CGS << "hhh" << eng << std::endl;
+		this->eng =eng;
+		//		std::cout << NUMDENS_CGS << "hhh" << eng << std::endl;
 		pres = (GAMMA - 1.0) * dens * eng;
 #endif
 	}
@@ -379,6 +394,9 @@ public:
 		if(std::strcmp(name, "pos")==0 ) {
 			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->pos.x, this->pos.y,this->pos.z);
 		}
+		if(std::strcmp(name, "magneticB")==0 ) {
+			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->MagneticB.x, this->MagneticB.y,this->MagneticB.z);
+		}
 
 #endif
 	}
@@ -393,9 +411,21 @@ public:
 		mu /= (this->abundances[1]+ this->abundances[7] +this->abundances[5] + this->abundances[2] + this->abundances[0]);
 		PS::F64 NUMDENS_CGS =this-> dens * PARAM::SMassDens / (mu*PARAM::PROTONMASS);
 		PS::F64 tem = mu * PARAM::PROTONMASS_CGS * this->pres * PARAM::SEng_per_Mass / (this->dens * PARAM::KBOLTZ_cgs * (1.1 + PARAM::i_abundance_e - PARAM::i_abundance_H2));
-
+		double GAMMA = 5./3.;
 		if(std::strcmp(name , "mass")==0) {
 			fprintf(fp, "%lf\n", this->mass*PARAM::SM/PARAM::M_SUN_cgs);
+		}
+		if(std::strcmp(name , "MagneticB_x")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.x);
+		}
+		if(std::strcmp(name , "MagneticB_y")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.y);
+		}
+		if(std::strcmp(name , "MagneticB_z")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.z);
+		}
+		if(std::strcmp(name , "intE")==0) {
+			fprintf(fp, "%lf\n", this->pres/((GAMMA -1)*(this->dens)));
 		}
 		if(std::strcmp(name,"dens")==0) {
 

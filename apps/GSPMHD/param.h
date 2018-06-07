@@ -5,7 +5,7 @@ const double Dim = 3.0; //number of dimension
 const double SMTH = 1.2;
 //et
 const double MU = 2.53;
-const int OUTPUT_INTERVAL = 1;
+const int OUTPUT_INTERVAL = 10;
 const double C_CFL = 0.5; //CFL number
 //const double Csmooth = 1.2; //Csmooth for calculation of smoothing length
 const int SPACE_ORDER = 2; //space order for riemann solver

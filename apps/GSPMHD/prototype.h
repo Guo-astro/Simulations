@@ -4,7 +4,12 @@ struct boundary{
 };
 void DisplayInfo(void);
 void SetupIC(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64*, boundary *box);
-
+void SetupICConvergentTest(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
+		boundary *box);
+void SetupICSlowShock(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
+		boundary *box);
+void SetupICToth(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
+		boundary *box);
 void SetupICSphericalBlastWaves(PS::ParticleSystem<RealPtcl>& sph_system,
 		PS::F64* end_time, boundary *box) ;
 void InitialKick(PS::ParticleSystem<RealPtcl>& sph_system, const PS::F64 dt);
