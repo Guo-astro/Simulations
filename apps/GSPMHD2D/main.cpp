@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
 	boundary box;
 	PS::F64 dt, end_time;
-	SetupIC(sph_system, &end_time, &box);
+	SetupICBlastWave(sph_system, &end_time, &box);
 
 
 //	sph_system.readParticleAscii("/Users/guo/Research/SimulationCode/FDPS-master/result/0001.dat");

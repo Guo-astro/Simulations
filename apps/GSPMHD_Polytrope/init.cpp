@@ -1,6 +1,6 @@
 #include "header.h"
 
-void SetupIC(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
+void SetupICBlastWave(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
 		boundary *box) {
 	/////////
 	//place ptcls

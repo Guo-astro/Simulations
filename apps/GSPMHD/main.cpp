@@ -34,7 +34,11 @@ int main(int argc, char* argv[]) {
 //	SetupICSphericalBlastWaves(sph_system, &end_time,&box);
 //	SetupIC(sph_system, &end_time,&box);
 //	SetupICSlowShock(sph_system, &end_time,&box);
-	SetupICToth(sph_system, &end_time,&box);
+//	SetupICOrszagTang(sph_system, &end_time,&box);
+//	SetupICBrioWu(sph_system, &end_time,&box);
+//	SetupICCurrentSheet(sph_system, &end_time,&box);
+	SetupICFieldLoop(sph_system, &end_time,&box);
+
 	dinfo.initialize();
 
 	//////////////////
@@ -46,8 +50,8 @@ int main(int argc, char* argv[]) {
 	//////////////////
 	dinfo.setBoundaryCondition(PS::BOUNDARY_CONDITION_PERIODIC_XYZ);
 
-	dinfo.setPosRootDomain(PS::F64vec(-box.x, -box.y, 0.0), PS::F64vec(box.x,box.y,box.z));
-//	dinfo.setPosRootDomain(PS::F64vec(0, 0, 0.0), PS::F64vec(box.x,box.y,box.z));
+//	dinfo.setPosRootDomain(PS::F64vec(0.0,0.0, 0.0), PS::F64vec(box.x,box.y,box.z));
+	dinfo.setPosRootDomain(PS::F64vec(-box.x,-box.y, 0.0), PS::F64vec(box.x,box.y,box.z));
 
 	Initialize(sph_system);
 	//Dom. info

@@ -123,7 +123,7 @@ public:
 			RESULT::Hydro* const hydro) {
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			hydro[i].clear();
-			PS::F64 Gamma = 5. / 3.;
+			PS::F64 Gamma = PARAM::GAMMA;
 			const EPI::Hydro& ith = ep_i[i];
 
 			for (PS::S32 j = 0; j < Njp; ++j) {
@@ -157,19 +157,59 @@ public:
 				calcRPMoC(ith.dt, Pt_RP, VparaRP, BperpMoC, VperpMoC, P_Bpara,
 						BparaStar, Gamma, ndir, ith, jth);
 				const PS::F64vec fac_acc_correc = BparaStar * ith.MagneticB;
-				const PS::F64 fac_eng_dot_correc = BparaStar * ith.vel_half
-						* ith.MagneticB;
 
 				const PS::F64vec fac_acc = -(Pt_RP - P_Bpara) * ndir
 						+ BparaStar * BperpMoC - fac_acc_correc;
+
+				hydro[i].acc += jth.mass * F_ij * fac_acc;
+
+			}
+			const PS::F64vec vhalf = ith.vel * .5 * hydro[i].acc * ith.dt;
+			PS::F64 divB = 0.0;
+			for (PS::S32 j = 0; j < Njp; ++j) {
+				const EPJ::Hydro& jth = ep_j[j];
+
+				const PS::F64vec dr = ith.pos - jth.pos;
+				if (dr == 0.0) {
+					continue;
+				}
+				const PS::F64 dr_norm = sqrt(dr * dr);
+				const PS::F64vec ndir = dr / dr_norm;
+				const PS::F64vec dv = ith.vel - jth.vel;
+
+				const PS::F64 s_ij = dr_norm;
+				PS::F64 VIJ_I, VIJ_J, sstar;
+				//				calc_Vij2_and_ss(ith, jth, VIJ_I, VIJ_J, sstar, dr_norm, ndir);
+				const PS::F64 hbar_ij = .5 * (ith.smth + jth.smth);
+				//				const PS::F64 F_ij = (kernel.gradW_scoord(s_ij, sqrt(2.0) * ith.smth)  *VIJ_I + kernel.gradW_scoord(s_ij, sqrt(2.0) * jth.smth)  *VIJ_J);
+				const PS::F64 F_ij = (kernel.gradW_scoord(s_ij, hbar_ij)
+						/ (ith.dens * ith.dens)
+						+ kernel.gradW_scoord(s_ij, hbar_ij)
+								/ (jth.dens * jth.dens));
+
+				PS::F64 Pt_RP = 0.0;
+				PS::F64 VparaRP = 0.0;
+				PS::F64vec BperpMoC = 0.0;
+				PS::F64vec VperpMoC = 0.0;
+				PS::F64 P_Bpara = 0.0;
+				PS::F64 BparaStar = 0.0;
+
+				calcRPMoC(ith.dt, Pt_RP, VparaRP, BperpMoC, VperpMoC, P_Bpara,
+						BparaStar, Gamma, ndir, ith, jth);
+				const PS::F64vec fac_acc_correc = BparaStar * ith.MagneticB;
+				const PS::F64 fac_eng_dot_correc = BparaStar * vhalf
+						* ith.MagneticB;
+
 				const PS::F64 fac_eng_dot = -(Pt_RP - P_Bpara) * VparaRP
 						+ BparaStar * (BperpMoC * VperpMoC)
 						- fac_eng_dot_correc;
-				const PS::F64vec fac_BoverDens_dot = BparaStar
-						* (VparaRP * ndir + VperpMoC - ith.vel_half);
-				hydro[i].acc += jth.mass * F_ij * fac_acc;
+
 				hydro[i].eng_dot += jth.mass * F_ij * fac_eng_dot;
+
+				const PS::F64vec fac_BoverDens_dot = BparaStar
+						* (VparaRP * ndir + VperpMoC - vhalf);
 				hydro[i].BoverDens_dot += jth.mass * F_ij * fac_BoverDens_dot;
+				hydro[i].div_B  += jth.mass * F_ij * BparaStar;
 
 			}
 
@@ -177,10 +217,10 @@ public:
 					(Gamma * ith.pres + ith.MagneticB * ith.MagneticB)
 							/ ith.dens);
 			PS::F64 dt = PARAM::C_CFL * ith.smth / C_fast;
-			dt = 3.e-4;
-			hydro[i].dt = dt;
+			hydro[i].dt = 0.6*dt;
 
 		}
+
 	}
 	double trimin(double x, double y, double z) {
 		return x < y ? (x < z ? x : z) : (y < z ? y : z);

@@ -76,6 +76,7 @@ public:
 	PS::F64vec gradvperp_x, gradvperp_y, gradvperp_z;
 	PS::F64vec gradBperp_x, gradBperp_y, gradBperp_z;
 	PS::F64 div_v;
+
 	PS::F64vec rot_v;
 	PS::F64vec gradV;
 	PS::F64vec graddens;
@@ -113,8 +114,10 @@ public:
 	PS::F64 eng_dot;
 	PS::F64vec BoverDens_dot;
 	PS::F64 dt;
+	PS::F64 div_B;
 	PS::F64vec extF;
 	void clear() {
+		div_B = 0.0;
 		extF = 0.;
 		acc = 0.;
 		eng_dot = 0.;
@@ -150,9 +153,11 @@ public:
 	PS::F64 snds; //SouND Speed
 	PS::F64 Lambda;
 	PS::F64 Gamma;
+	PS::F64 deltaB;
 	PS::F64 cooling_timescale, sg_timescale, bh_timescale, hydro_timescale,
 			eng_timescale;
 	PS::F64 div_v;
+	PS::F64 div_B;
 	PS::F64vec rot_v;
 	PS::F64 Bal; //Balsala switch
 	PS::F64vec grad_dens;
@@ -184,11 +189,12 @@ public:
 	PS::F64vec grav;
 	PS::F64 pot;
 
-	const char* scalars[PARAM::COMP + 11] = { "mass", "pres", "dens", "vx",
-			"vy", "vz", "T", "eng", "ab_e", "ab_HI", "ab_HeI", "ab_OI", "ab_CI",
-			"ab_H2", "ab_CO", "ab_HII", "ab_CII", "ab_FeII", "ab_SiII",
-			"cooling", "heating", "cooling_timescale","MagneticB_x","MagneticB_y","MagneticB_z","intE" };
-	const char* vectors[3] = { "vel", "acc", "pos","MagneticB" };
+	const char* scalars[28] = { "mass", "pres", "dens", "vx", "vy", "vz", "T",
+			"eng", "ab_e", "ab_HI", "ab_HeI", "ab_OI", "ab_CI", "ab_H2",
+			"ab_CO", "ab_HII", "ab_CII", "ab_FeII", "ab_SiII", "cooling",
+			"heating", "cooling_timescale", "MagneticB_x", "MagneticB_y",
+			"MagneticB_z", "intE", "divB", "deltaB" };
+	const char* vectors[4] = { "vel", "acc", "pos", "MagneticB" };
 
 	PS::F64 abundances[PARAM::COMP];
 	PS::F64 old_abundances[PARAM::COMP];
@@ -231,6 +237,7 @@ public:
 		this->extF = force.extF;
 		this->dt = force.dt;
 		this->BoverDens_dot = force.BoverDens_dot;
+		this->div_B = force.div_B;
 	}
 	void copyFromForce(const RESULT::Grav& force) {
 		this->grav = force.acc;
@@ -276,7 +283,7 @@ public:
 						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
 						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
 						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
-						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
 				this->id, this->mass, this->smth, this->pos.x, this->pos.y,
 				this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens,
 				this->eng, this->pres, this->MagneticB.x, this->MagneticB.y,
@@ -287,7 +294,7 @@ public:
 				this->abundances[0], this->abundances[1], this->abundances[2],
 				this->abundances[3], this->abundances[4], this->abundances[5],
 				this->abundances[6], this->abundances[7], this->abundances[8],
-				this->abundances[9], mu);
+				this->abundances[9], mu, this->div_B, this->deltaB);
 	}
 	void readAscii(FILE* fp) {
 #ifdef RESTART
@@ -302,7 +309,7 @@ public:
 		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
 				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
 				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
-				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf",
+				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf%lf%lf",
 				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
 				&this->pos.z, &this->vel.x, &this->vel.y,&this->vel.z, &this->dens,
 				&this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y, &this->MagneticB.z,
@@ -312,7 +319,7 @@ public:
 				&this->abundances[0], &this->abundances[1], &this->abundances[2],
 				&this->abundances[3], &this->abundances[4], &this->abundances[5],
 				&this->abundances[6], &this->abundances[7], &this->abundances[8],
-				&this->abundances[9], &mu);
+				&this->abundances[9], &mu,&this->div_B,&this->deltaB);
 		if (this->eng < 0.0 || this->pres < 0.0) {
 			std::cout << pres << "in class.h readAscii" << eng<<" "<<dens << std::endl;
 
@@ -429,7 +436,7 @@ public:
 		}
 		if(std::strcmp(name,"dens")==0) {
 
-			fprintf(fp, "%lf\n", NUMDENS_CGS );
+			fprintf(fp, "%lf\n", this->dens );
 		}
 		if(std::strcmp(name,"pres")==0) {
 			fprintf(fp, "%lf\n", this->pres);
@@ -501,6 +508,12 @@ public:
 		if(std::strcmp(name,"cooling_timescale")==0) {
 			fprintf(fp, "%lf\n", this->cooling_timescale);
 		}
+		if(std::strcmp(name,"divB")==0) {
+			fprintf(fp, "%lf\n", this->div_B);
+		}
+		if(std::strcmp(name,"deltaB")==0) {
+			fprintf(fp, "%lf\n", this->deltaB);
+		}
 
 		//		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id, this->mass, this->pos.x,
 		//				this->pos.y, this->pos.z, sqrt(pow(this->pos.x, 2) + pow(this->pos.y, 2) + pow(this->pos.z, 2)),
@@ -567,7 +580,7 @@ public:
 //		}
 
 		//PS::F64 hcr = 1.4;//heat capacity ratio
-		PS::F64 hcr = 5. / 3.; //heat capacity ratio
+		PS::F64 hcr = PARAM::GAMMA; //heat capacity ratio
 
 //		std::cout << "press"<<eng - .5 * vel * vel - .5 * MagneticB * MagneticB / dens << std::endl;
 		pres = (hcr - 1.0) * dens
