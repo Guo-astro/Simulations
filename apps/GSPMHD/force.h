@@ -53,8 +53,10 @@ public:
 				const PS::F64vec vperpj = jth.vel - (jth.vel * ndir) * ndir;
 				const PS::F64vec vperpi = ith.vel - (ith.vel * ndir) * ndir;
 				drvt[i].grad_dens += jth.mass * kernel.gradW(dr, ith.smth);
+
 				drvt[i].gradP += jth.mass * (jth.pres - ith.pres)
 						* kernel.gradW(dr, ith.smth) / jth.dens;
+
 				drvt[i].gradVpara += jth.mass * ((jth.vel - ith.vel) * ndir)
 						* kernel.gradW(dr, ith.smth) / jth.dens;
 				drvt[i].gradvperp_x += jth.mass * (vperpj.x - vperpi.x)
@@ -78,6 +80,27 @@ public:
 						* kernel.gradW(dr, ith.smth) / jth.dens;
 				drvt[i].gradPT += jth.mass * (PTj - PTi)
 						* kernel.gradW(dr, ith.smth) / jth.dens;
+
+				drvt[i].ngrad_dens = ndir * drvt[i].grad_dens;
+				drvt[i].ngrad_dens = ndir * drvt[i].grad_dens;
+				drvt[i].ngradP = ndir * drvt[i].gradP;
+				drvt[i].ngradPT = ndir * drvt[i].gradPT;
+				drvt[i].ngradVpara = ndir * drvt[i].gradVpara;
+				drvt[i].ngradBperp2 = ndir * drvt[i].gradBperp2;
+				drvt[i].ngradvperp_x = ndir * drvt[i].gradvperp_x;
+				drvt[i].ngradvperp_y = ndir * drvt[i].gradvperp_y;
+				drvt[i].ngradvperp_z = ndir * drvt[i].gradvperp_z;
+				drvt[i].ngradBperp_x = ndir * drvt[i].gradBperp_x;
+				drvt[i].ngradBperp_y = ndir * drvt[i].gradBperp_y;
+				drvt[i].ngradBperp_z = ndir * drvt[i].gradBperp_z;
+				drvt[i].nrot_v = ndir * drvt[i].rot_v;
+				drvt[i].ngradV = ndir * drvt[i].gradV;
+				drvt[i].ngraddens = ndir * drvt[i].graddens;
+				drvt[i].ngradpres = ndir * drvt[i].gradpres;
+				drvt[i].ngradvel_x = ndir * drvt[i].gradvel_x;
+				drvt[i].ngradvel_y = ndir * drvt[i].gradvel_y;
+				drvt[i].ngradvel_z = ndir * drvt[i].gradvel_z;
+				drvt[i].ngradvel = ndir * drvt[i].gradvel;
 
 			}
 
@@ -209,7 +232,7 @@ public:
 				const PS::F64vec fac_BoverDens_dot = BparaStar
 						* (VparaRP * ndir + VperpMoC - vhalf);
 				hydro[i].BoverDens_dot += jth.mass * F_ij * fac_BoverDens_dot;
-				hydro[i].div_B  += jth.mass * F_ij * BparaStar;
+				hydro[i].div_B += jth.mass * F_ij * BparaStar;
 
 			}
 
@@ -217,7 +240,7 @@ public:
 					(Gamma * ith.pres + ith.MagneticB * ith.MagneticB)
 							/ ith.dens);
 			PS::F64 dt = PARAM::C_CFL * ith.smth / C_fast;
-			hydro[i].dt = 0.6*dt;
+			hydro[i].dt = 0.6 * dt;
 
 		}
 
@@ -258,24 +281,20 @@ public:
 		//////////////////////////Original Variables Finish/////////////////////////////////////////////////////////////////////////////
 		//////////////////////////Original Derivative Variables Start/////////////////////////////////////////////////////////////////////////////
 		/**Left j**/
-		const PS::F64 drv_densL = ep_L.grad_dens * ndir;
-		const PS::F64 drv_PTL = ep_L.gradPT * ndir;
-		const PS::F64 drv_velparaL = ep_L.gradVpara * ndir;
-		const PS::F64 drv_BperpL2 = ep_L.gradBperp2 * ndir;
-		const PS::F64 drv_BperpLx = ep_L.gradBperp_x * ndir;
-		const PS::F64 drv_BperpLy = ep_L.gradBperp_y * ndir;
-		const PS::F64 drv_BperpLz = ep_L.gradBperp_z * ndir;
-		const PS::F64 drv_PresL = ep_L.gradP * ndir;
+		const PS::F64 drv_densL = ep_L.ngrad_dens;
+		const PS::F64 drv_velparaL = ep_L.ngradVpara;
+		const PS::F64 drv_BperpLx = ep_L.ngradBperp_x;
+		const PS::F64 drv_BperpLy = ep_L.ngradBperp_y;
+		const PS::F64 drv_BperpLz = ep_L.ngradBperp_z;
+		const PS::F64 drv_PresL = ep_L.ngradP;
 
 		/**Right i**/
-		const PS::F64 drv_densR = ep_R.grad_dens * ndir;
-		const PS::F64 drv_PTR = ep_R.gradPT * ndir;
-		const PS::F64 drv_velparaR = ep_R.gradVpara * ndir;
-		const PS::F64 drv_BperpR2 = ep_R.gradBperp2 * ndir;
-		const PS::F64 drv_BperpRx = ep_R.gradBperp_x * ndir;
-		const PS::F64 drv_BperpRy = ep_R.gradBperp_y * ndir;
-		const PS::F64 drv_BperpRz = ep_R.gradBperp_z * ndir;
-		const PS::F64 drv_PresR = ep_R.gradP * ndir;
+		const PS::F64 drv_densR = ep_R.ngrad_dens;
+		const PS::F64 drv_velparaR = ep_R.ngradVpara;
+		const PS::F64 drv_BperpRx = ep_R.ngradBperp_x;
+		const PS::F64 drv_BperpRy = ep_R.ngradBperp_y;
+		const PS::F64 drv_BperpRz = ep_R.ngradBperp_z;
+		const PS::F64 drv_PresR = ep_R.ngradP;
 
 		//////////////////////////Original Derivative Variables Finish/////////////////////////////////////////////////////////////////////////////
 		//////////////////////////Original Derived Variables Start/////////////////////////////////////////////////////////////////////////////
@@ -304,117 +323,150 @@ public:
 		const PS::F64 orig_PTL = orig_PresL + .5 * orig_BperpL2;
 		const PS::F64 orig_PTR = orig_PresR + .5 * orig_BperpR2;
 
-		const PS::F64 DiffVpara = orig_vparaR - orig_vparaL;
-		const PS::F64 DiffBperp2 = orig_BperpR2 - orig_BperpL2;
-		const PS::F64 DiffPT = orig_PTR - orig_PTL;
-		const PS::F64 DiffPres = orig_PresR - orig_PresL;
-		const PS::F64 DiffDens = orig_DensR - orig_DensL;
+		const PS::F64 DiffVparaR = orig_vparaR - orig_vparaL;
+		const PS::F64 DiffPTR = orig_PTR - orig_PTL;
+		const PS::F64 DiffPresR = orig_PresR - orig_PresL;
+		const PS::F64 DiffDensR = orig_DensR - orig_DensL;
+		const PS::F64 DiffBperpRx = orig_BperpR.x - orig_BperpL.x;
+		const PS::F64 DiffBperpRy = orig_BperpR.y - orig_BperpL.y;
+		const PS::F64 DiffBperpRz = orig_BperpR.z - orig_BperpL.z;
+
+		const PS::F64 DiffVparaL = orig_vparaL - orig_vparaR;
+		const PS::F64 DiffPTL = orig_PTL - orig_PTR;
+		const PS::F64 DiffPresL = orig_PresL - orig_PresR;
+		const PS::F64 DiffDensL = orig_DensL - orig_DensR;
+		const PS::F64 DiffBperpLx = orig_BperpL.x - orig_BperpR.x;
+		const PS::F64 DiffBperpLy = orig_BperpL.y - orig_BperpR.y;
+		const PS::F64 DiffBperpLz = orig_BperpL.z - orig_BperpR.z;
 		/**Left j**/
 		const PS::F64 DeltaVparaL = drv_velparaL * deltaS;
-		const PS::F64 DeltaBperpL2 = drv_BperpL2 * deltaS;
-		const PS::F64 DeltaPTL = drv_PTL * deltaS;
 		const PS::F64 DeltaDensL = drv_densL * deltaS;
 		const PS::F64 DeltaPresL = drv_PresL * deltaS;
 
 		const PS::F64 DeltaBperpLx = drv_BperpLx * deltaS;
 		const PS::F64 DeltaBperpLy = drv_BperpLy * deltaS;
 		const PS::F64 DeltaBperpLz = drv_BperpLz * deltaS;
-		const PS::F64 DeltaVpara_dashL = 2.0 * DeltaVparaL - DiffVpara;
-		const PS::F64 DeltaBperp_dashL2 = 2.0 * DeltaBperpL2 - DiffBperp2;
-		const PS::F64 DeltaPT_dashL = 2.0 * DeltaPTL + DiffPT;
-		const PS::F64 DiffPres_dashL = 2.0 * DeltaPresL - DiffPres;
-		const PS::F64 DeltaDens_dashL = 2.0 * DeltaDensL - DiffDens;
+		const PS::F64 DeltaVpara_dashL = 2.0 * DeltaVparaL - DiffVparaL;
+		const PS::F64 DeltaDens_dashL = 2.0 * DeltaDensL - DiffDensL;
+		const PS::F64 DiffPres_dashL = 2.0 * DeltaPresL - DiffPresL;
+
+		const PS::F64 DiffBperp_dashLx = 2.0 * DeltaBperpLx - DiffBperpLx;
+		const PS::F64 DiffBperp_dashLy = 2.0 * DeltaBperpLy - DiffBperpLy;
+		const PS::F64 DiffBperp_dashLz = 2.0 * DeltaBperpLz - DiffBperpLz;
 //		/**Right i**/
 		const PS::F64 DeltaVparaR = drv_velparaR * deltaS;
-		const PS::F64 DeltaBperpR2 = drv_BperpR2 * deltaS;
-		const PS::F64 DeltaPTR = drv_PTR * deltaS;
 		const PS::F64 DeltaDensR = drv_densR * deltaS;
 		const PS::F64 DeltaBperpRx = drv_BperpRx * deltaS;
 		const PS::F64 DeltaBperpRy = drv_BperpRy * deltaS;
 		const PS::F64 DeltaBperpRz = drv_BperpRz * deltaS;
 		const PS::F64 DeltaPresR = drv_PresR * deltaS;
 
-		const PS::F64 DeltaVpara_dashR = 2.0 * DeltaVparaR - DiffVpara;
-		const PS::F64 DeltaBperp_dashR2 = 2.0 * DeltaBperpR2 - DiffBperp2;
-		const PS::F64 DeltaPT_dashR = 2.0 * DeltaPTR - DiffPT;
-		const PS::F64 DeltaDens_dashR = 2.0 * DeltaDensR - DiffDens;
-		const PS::F64 DiffPres_dashR = 2.0 * DeltaPresR - DiffPres;
+		const PS::F64 DeltaVpara_dashR = 2.0 * DeltaVparaR - DiffVparaR;
+		const PS::F64 DeltaDens_dashR = 2.0 * DeltaDensR - DiffDensR;
+		const PS::F64 DiffPres_dashR = 2.0 * DeltaPresR - DiffPresR;
+
+		const PS::F64 DiffBperp_dashRx = 2.0 * DeltaBperpRx - DiffBperpRx;
+		const PS::F64 DiffBperp_dashRy = 2.0 * DeltaBperpRy - DiffBperpRy;
+		const PS::F64 DiffBperp_dashRz = 2.0 * DeltaBperpRz - DiffBperpRz;
 
 //		//////////////////////////Monotone Variables Finish////////////////////////////////////////////////////////////////////////////
 //		//////////////////////////Monotone Constraints Start////////////////////////////////////////////////////////////////////////////
 		const PS::F64 DeltaVparaL_mono =
-				(sgn(DiffVpara) == sgn(DeltaVparaL)
+				(sgn(DiffVparaL) == sgn(DeltaVparaL)
 						&& sgn(DeltaVparaL) == sgn(DeltaVpara_dashL)) ?
 						sgn(DeltaVparaL)
-								* trimin(2.0 * fabs(DiffVpara),
+								* trimin(2.0 * fabs(DiffVparaL),
 										fabs(DeltaVparaL),
 										2.0 * fabs(DeltaVpara_dashL)) :
 						0.0;
-		const PS::F64 DeltaBperpL2_mono =
-				(sgn(DiffBperp2) == sgn(DeltaBperpL2)
-						&& sgn(DeltaBperpL2) == sgn(DeltaBperp_dashL2)) ?
-						sgn(DeltaBperpL2)
-								* trimin(2.0 * fabs(DiffBperp2),
-										fabs(DeltaBperpL2),
-										2.0 * fabs(DeltaBperp_dashL2)) :
-						0.0;
-		const PS::F64 DeltaPTL_mono =
-				(sgn(DiffPT) == sgn(DeltaPTL)
-						&& sgn(DeltaPTL) == sgn(DeltaPT_dashL)) ?
-						sgn(DeltaPTL)
-								* trimin(2.0 * fabs(DiffPT), fabs(DeltaPTL),
-										2.0 * fabs(DeltaPT_dashL)) :
-						0.0;
 		const PS::F64 DeltaDensL_mono =
-				(sgn(DiffDens) == sgn(DeltaDensL)
+				(sgn(DiffDensL) == sgn(DeltaDensL)
 						&& sgn(DeltaDensL) == sgn(DeltaDens_dashL)) ?
 						sgn(DeltaDensL)
-								* trimin(2.0 * fabs(DiffDens), fabs(DeltaDensL),
+								* trimin(2.0 * fabs(DiffDensL),
+										fabs(DeltaDensL),
 										2.0 * fabs(DeltaDens_dashL)) :
 						0.0;
 		const PS::F64 DeltaPresL_mono =
-				(-sgn(DiffPres) == sgn(DeltaPresL)
+				(sgn(DiffPresL) == sgn(DeltaPresL)
 						&& sgn(DeltaPresL) == sgn(DiffPres_dashL)) ?
 						sgn(DeltaPresL)
-								* trimin(2.0 * fabs(DiffPres), fabs(DeltaPresL),
+								* trimin(2.0 * fabs(DiffPresL),
+										fabs(DeltaPresL),
 										2.0 * fabs(DiffPres_dashL)) :
 						0.0;
 
+		const PS::F64 DeltaBperpLx_mono =
+				(sgn(DiffBperpLx) == sgn(DeltaBperpLx)
+						&& sgn(DeltaBperpLx) == sgn(DiffBperp_dashLx)) ?
+						sgn(DeltaBperpLx)
+								* trimin(2.0 * fabs(DiffBperpLx),
+										fabs(DeltaBperpLx),
+										2.0 * fabs(DiffBperp_dashLx)) :
+						0.0;
+		const PS::F64 DeltaBperpLy_mono =
+				(sgn(DiffBperpLy) == sgn(DeltaBperpLy)
+						&& sgn(DeltaBperpLy) == sgn(DiffBperp_dashLy)) ?
+						sgn(DeltaBperpLy)
+								* trimin(2.0 * fabs(DiffBperpLy),
+										fabs(DeltaBperpLy),
+										2.0 * fabs(DiffBperp_dashLy)) :
+						0.0;
+		const PS::F64 DeltaBperpLz_mono =
+				(sgn(DiffBperpLz) == sgn(DeltaBperpLz)
+						&& sgn(DeltaBperpLz) == sgn(DiffBperp_dashLz)) ?
+						sgn(DeltaBperpLz)
+								* trimin(2.0 * fabs(DiffBperpLz),
+										fabs(DeltaBperpLz),
+										2.0 * fabs(DiffBperp_dashLz)) :
+						0.0;
+		const PS::F64 DeltaBperpRx_mono =
+				(sgn(DiffBperpRx) == sgn(DeltaBperpRx)
+						&& sgn(DeltaBperpRx) == sgn(DiffBperp_dashRx)) ?
+						sgn(DeltaBperpRx)
+								* trimin(2.0 * fabs(DiffBperpRx),
+										fabs(DeltaBperpRx),
+										2.0 * fabs(DiffBperp_dashRx)) :
+						0.0;
+		const PS::F64 DeltaBperpRy_mono =
+				(sgn(DiffBperpRy) == sgn(DeltaBperpRy)
+						&& sgn(DeltaBperpRy) == sgn(DiffBperp_dashRy)) ?
+						sgn(DeltaBperpRy)
+								* trimin(2.0 * fabs(DiffBperpRy),
+										fabs(DeltaBperpRy),
+										2.0 * fabs(DiffBperp_dashRy)) :
+						0.0;
+		const PS::F64 DeltaBperpRz_mono =
+				(sgn(DiffBperpRz) == sgn(DeltaBperpRz)
+						&& sgn(DeltaBperpRz) == sgn(DiffBperp_dashRz)) ?
+						sgn(DeltaBperpRz)
+								* trimin(2.0 * fabs(DiffBperpRz),
+										fabs(DeltaBperpRz),
+										2.0 * fabs(DiffBperp_dashRz)) :
+						0.0;
+
 		const PS::F64 DeltaVparaR_mono =
-				(sgn(DiffVpara) == sgn(DeltaVparaR)
+				(sgn(DiffVparaR) == sgn(DeltaVparaR)
 						&& sgn(DeltaVparaR) == sgn(DeltaVpara_dashR)) ?
 						sgn(DeltaVparaR)
-								* trimin(2.0 * fabs(DiffVpara),
+								* trimin(2.0 * fabs(DiffVparaR),
 										fabs(DeltaVparaR),
 										2.0 * fabs(DeltaVpara_dashR)) :
 						0.0;
-		const PS::F64 DeltaBperpR2_mono =
-				(sgn(DiffBperp2) == sgn(DeltaBperpR2)
-						&& sgn(DeltaBperpR2) == sgn(DeltaBperp_dashR2)) ?
-						sgn(DeltaBperpR2)
-								* trimin(2.0 * fabs(DiffBperp2),
-										fabs(DeltaBperpR2),
-										2.0 * fabs(DeltaBperp_dashR2)) :
-						0.0;
-		const PS::F64 DeltaPTR_mono =
-				(sgn(DiffPT) == sgn(DeltaPTR)
-						&& sgn(DeltaPTR) == sgn(DeltaPT_dashR)) ?
-						sgn(DeltaPTR)
-								* trimin(2.0 * fabs(DiffPT), fabs(DeltaPTR),
-										2.0 * fabs(DeltaPT_dashR)) :
-						0.0;
 		const PS::F64 DeltaDensR_mono =
-				(sgn(DiffDens) == sgn(DeltaDensR)
+				(sgn(DiffDensR) == sgn(DeltaDensR)
 						&& sgn(DeltaDensR) == sgn(DeltaDens_dashR)) ?
 						sgn(DeltaDensR)
-								* trimin(2.0 * fabs(DiffDens), fabs(DeltaDensR),
+								* trimin(2.0 * fabs(DiffDensR),
+										fabs(DeltaDensR),
 										2.0 * fabs(DeltaDens_dashR)) :
 						0.0;
 		const PS::F64 DeltaPresR_mono =
-				(sgn(DiffPres) == sgn(DeltaPresR)
+				(sgn(DiffPresR) == sgn(DeltaPresR)
 						&& sgn(DeltaPresR) == sgn(DiffPres_dashR)) ?
 						sgn(DeltaPresR)
-								* trimin(2.0 * fabs(DiffPres), fabs(DeltaPresR),
+								* trimin(2.0 * fabs(DiffPresR),
+										fabs(DeltaPresR),
 										2.0 * fabs(DiffPres_dashR)) :
 						0.0;
 
@@ -458,58 +510,65 @@ public:
 						* orig_idensR);
 		const PS::F64 dod_facRRP = .5 * (1.0 - C_fastR * dt / deltaS);
 //
-//		const PS::F64 fac_velparaLRP = DeltaVparaL_mono * dod_facLRP;
-//		const PS::F64 fac_BperpL2RP = DeltaBperpL2_mono * dod_facLRP;
-		const PS::F64 fac_PTLRP = DeltaPTL_mono * dod_facLRP;
+		const PS::F64 fac_velparaLRP = DeltaVparaL_mono * dod_facLRP;
+		const PS::F64 fac_BperpLxRP = DeltaBperpLx_mono * dod_facLRP;
+		const PS::F64 fac_BperpLyRP = DeltaBperpLy_mono * dod_facLRP;
+		const PS::F64 fac_BperpLzRP = DeltaBperpLz_mono * dod_facLRP;
 		const PS::F64 fac_densLRP = DeltaDensL_mono * dod_facLRP;
 		const PS::F64 fac_PresLRP = DeltaPresL_mono * dod_facLRP;
-		const PS::F64 fac_BperpL2RP = DeltaBperpL2_mono * dod_facLRP;
 
-//		const PS::F64 fac_velparaRRP = DeltaVparaR_mono * dod_facRRP;
-//		const PS::F64 fac_BperpR2RP = DeltaBperpR2_mono * dod_facRRP;
-		const PS::F64 fac_PTRRP = DeltaPTR_mono * dod_facRRP;
+		const PS::F64 fac_velparaRRP = DeltaVparaR_mono * dod_facRRP;
+		const PS::F64 fac_BperpRxRP = DeltaBperpRx_mono * dod_facRRP;
+		const PS::F64 fac_BperpRyRP = DeltaBperpRy_mono * dod_facRRP;
+		const PS::F64 fac_BperpRzRP = DeltaBperpRz_mono * dod_facRRP;
 		const PS::F64 fac_densRRP = DeltaDensR_mono * dod_facRRP;
 		const PS::F64 fac_PresRRP = DeltaPresR_mono * dod_facRRP;
-		const PS::F64 fac_BperpR2RP = DeltaBperpR2_mono * dod_facRRP;
-//		if (DeltaBperpR2_mono != 0.0) {
-//			std::cout << DeltaBperpR2_mono << " " << DeltaBperpL2_mono << " " << dod_facRRP << " " << dod_facLRP << std::endl;
-//		}
-//		const PS::F64 PTLRP_star = orig_PresL + .5 * orig_BperpL2;
-//		const PS::F64 PTRRP_star = orig_PresR + .5 * orig_BperpR2;
 //		//////L -> j///////////////////////////
-//		PS::F64 vparaLRP = orig_vparaL + fac_velparaLRP;
-//		PS::F64 BperpL2RP = orig_BperpL2 + fac_BperpL2RP;
-//		PS::F64 densLRP = orig_DensL + fac_densLRP;
-//		const PS::F64 PTLRP = orig_PresL + .5 * orig_BperpL2 + fac_PTLRP;
+		PS::F64 vparaLRP = orig_vparaL + fac_velparaLRP;
+		PS::F64 BperpLxRP = orig_BperpL.x + fac_BperpLxRP;
+		PS::F64 BperpLyRP = orig_BperpL.y + fac_BperpLyRP;
+		PS::F64 BperpLzRP = orig_BperpL.z + fac_BperpLzRP;
+		PS::F64 BperpL2RP = BperpLxRP * BperpLxRP + BperpLyRP * BperpLyRP
+				+ BperpLzRP * BperpLzRP;
+		PS::F64 densLRP = orig_DensL + fac_densLRP;
+		PS::F64 presLRP = orig_PresL + fac_PresLRP;
+
+		const PS::F64 PTLRP = presLRP + .5 * BperpL2RP;
 //
 //		//////R -> i///////////////////////////
 //
-//		PS::F64 vparaRRP = orig_vparaR - fac_velparaRRP;
-//		PS::F64 BperpR2RP = orig_BperpR2 - fac_BperpR2RP;
-//		PS::F64 densRRP = orig_DensR - fac_densRRP;
-//		const PS::F64 PTRRP = orig_PresR + .5 * orig_BperpR2 - fac_PTRRP;
+		PS::F64 vparaRRP = orig_vparaR - fac_velparaRRP;
+		PS::F64 BperpRxRP = orig_BperpR.x - fac_BperpRxRP;
+		PS::F64 BperpRyRP = orig_BperpR.y - fac_BperpRyRP;
+		PS::F64 BperpRzRP = orig_BperpR.z - fac_BperpRzRP;
+		PS::F64 BperpR2RP = BperpRxRP * BperpRxRP + BperpRyRP * BperpRyRP
+				+ BperpRzRP * BperpRzRP;
+		PS::F64 densRRP = orig_DensR - fac_densRRP;
+		PS::F64 presRRP = orig_PresR - fac_PresRRP;
+
+		const PS::F64 PTRRP = presRRP + .5 * BperpR2RP;
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////L -> j///////////////////////////
-		PS::F64 vparaLRP = orig_vparaL;
-		PS::F64 BperpL2RP = orig_BperpL2;
-		PS::F64 densLRP = orig_DensL;
-		const PS::F64 PTLRP_star = orig_PresL + .5 * orig_BperpL2;
-		const PS::F64 PTLRP = PTLRP_star;
-//		////////R -> i///////////////////////////
-		PS::F64 vparaRRP = orig_vparaR;
-		PS::F64 BperpR2RP = orig_BperpR2;
-		PS::F64 densRRP = orig_DensR;
-		const PS::F64 PTRRP_star = orig_PresR + .5 * orig_BperpR2;
-		const PS::F64 PTRRP = PTRRP_star;
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//		PS::F64 vparaLRP = orig_vparaL;
+//		PS::F64 BperpL2RP = orig_BperpL2;
+//		PS::F64 densLRP = orig_DensL;
 
+//		const PS::F64 PTLRP = PTLRP_star;
+//		////////R -> i///////////////////////////
+//		PS::F64 vparaRRP = orig_vparaR;
+//		PS::F64 BperpR2RP = orig_BperpR2;
+//		PS::F64 densRRP = orig_DensR;
+//		const PS::F64 PTRRP = PTRRP_star;
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		const PS::F64 PTLRP_star = orig_PresL + .5 * orig_BperpL2;
+		const PS::F64 PTRRP_star = orig_PresR + .5 * orig_BperpR2;
 		PS::F64 ptRRP = PTRRP;
 		PS::F64 ptLRP = PTLRP;
 		if (ptRRP < 0.0 || ptLRP < 0.0 || densLRP < 0.0 || densRRP < 0.0

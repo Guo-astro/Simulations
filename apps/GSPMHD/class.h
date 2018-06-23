@@ -85,6 +85,23 @@ public:
 	PS::F64vec gradvel_y;
 	PS::F64vec gradvel_z;
 	PS::F64vec gradvel;
+
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	void clear() {
 		grad_dens = 0.0;
 		gradP = 0.0;
@@ -102,6 +119,26 @@ public:
 		gradvel_y = 0.;
 		gradvel_z = 0.;
 		gradvel = 0.0;
+
+		ngrad_dens = 0.0;
+		ngradP = 0.0;
+		ngradPT = 0.0;
+		ngradVpara = 0.0;
+		ngradBperp2 = 0.0;
+		ngradvperp_x = 0;
+		ngradvperp_y = 0;
+		ngradvperp_z = 0.0;
+		ngradBperp_x = 0;
+		ngradBperp_y = 0;
+		ngradBperp_z = 0.0;
+		nrot_v = 0.0;
+		ngradV = 0.0;
+		ngraddens = 0.0;
+		ngradpres = 0.0;
+		ngradvel_x = 0.;
+		ngradvel_y = 0.;
+		ngradvel_z = 0.;
+		ngradvel = 0.0;
 	}
 };
 //Hydro force
@@ -175,6 +212,22 @@ public:
 	PS::F64vec gradvel_y;
 	PS::F64vec gradvel_z;
 	PS::F64vec gradvel;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	PS::F64vec MagneticB;
 	PS::F64vec BoverDens_dot;
 	PS::F64vec BoverDens;
@@ -230,6 +283,27 @@ public:
 		this->Bal = fabs(drvt.div_v)
 				/ (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v)
 						+ 1.0e-4 * this->snds / this->smth); //Balsala switch
+
+		this->ngrad_dens = drvt.ngrad_dens;
+		this->ngrad_dens = drvt.ngrad_dens;
+		this->ngradP = drvt.ngradP;
+		this->ngradPT = drvt.ngradPT;
+		this->ngradVpara = drvt.ngradVpara;
+		this->ngradBperp2 = drvt.ngradBperp2;
+		this->ngradvperp_x = drvt.ngradvperp_x;
+		this->ngradvperp_y = drvt.ngradvperp_y;
+		this->ngradvperp_z = drvt.ngradvperp_z;
+		this->ngradBperp_x = drvt.ngradBperp_x;
+		this->ngradBperp_y = drvt.ngradBperp_y;
+		this->ngradBperp_z = drvt.ngradBperp_z;
+		this->nrot_v = drvt.nrot_v;
+		this->ngradV = drvt.ngradV;
+		this->ngraddens = drvt.ngraddens;
+		this->ngradpres = drvt.ngradpres;
+		this->ngradvel_x = drvt.ngradvel_x;
+		this->ngradvel_y = drvt.ngradvel_y;
+		this->ngradvel_z = drvt.ngradvel_z;
+		this->ngradvel = drvt.ngradvel;
 	}
 	void copyFromForce(const RESULT::Hydro& force) {
 		this->acc = force.acc;
@@ -671,7 +745,22 @@ public:
 	PS::F64vec MagneticB;
 	PS::F64vec vel_half;
 	PS::F64vec extF;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
 
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	PS::S64 id; ///DEBUG
 	void copyFromFP(const RealPtcl& rp) {
 		this->extF = rp.extF;
@@ -704,6 +793,26 @@ public:
 		this->gradvel_x = rp.gradvel_x;
 		this->gradvel_y = rp.gradvel_y;
 		this->gradvel_z = rp.gradvel_z;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngradP = rp.ngradP;
+		this->ngradPT = rp.ngradPT;
+		this->ngradVpara = rp.ngradVpara;
+		this->ngradBperp2 = rp.ngradBperp2;
+		this->ngradvperp_x = rp.ngradvperp_x;
+		this->ngradvperp_y = rp.ngradvperp_y;
+		this->ngradvperp_z = rp.ngradvperp_z;
+		this->ngradBperp_x = rp.ngradBperp_x;
+		this->ngradBperp_y = rp.ngradBperp_y;
+		this->ngradBperp_z = rp.ngradBperp_z;
+		this->nrot_v = rp.nrot_v;
+		this->ngradV = rp.ngradV;
+		this->ngraddens = rp.ngraddens;
+		this->ngradpres = rp.ngradpres;
+		this->ngradvel_x = rp.ngradvel_x;
+		this->ngradvel_y = rp.ngradvel_y;
+		this->ngradvel_z = rp.ngradvel_z;
+		this->ngradvel = rp.ngradvel;
 
 	}
 	PS::F64vec getPos() const {
@@ -799,6 +908,22 @@ public:
 	PS::F64vec gradvel_y;
 	PS::F64vec gradvel_z;
 	PS::F64vec gradvel;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	PS::F64vec xstar;
 	PS::F64vec MagneticB;
 	PS::F64vec vel_half;
@@ -836,6 +961,26 @@ public:
 		this->gradvel_x = rp.gradvel_x;
 		this->gradvel_y = rp.gradvel_y;
 		this->gradvel_z = rp.gradvel_z;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngradP = rp.ngradP;
+		this->ngradPT = rp.ngradPT;
+		this->ngradVpara = rp.ngradVpara;
+		this->ngradBperp2 = rp.ngradBperp2;
+		this->ngradvperp_x = rp.ngradvperp_x;
+		this->ngradvperp_y = rp.ngradvperp_y;
+		this->ngradvperp_z = rp.ngradvperp_z;
+		this->ngradBperp_x = rp.ngradBperp_x;
+		this->ngradBperp_y = rp.ngradBperp_y;
+		this->ngradBperp_z = rp.ngradBperp_z;
+		this->nrot_v = rp.nrot_v;
+		this->ngradV = rp.ngradV;
+		this->ngraddens = rp.ngraddens;
+		this->ngradpres = rp.ngradpres;
+		this->ngradvel_x = rp.ngradvel_x;
+		this->ngradvel_y = rp.ngradvel_y;
+		this->ngradvel_z = rp.ngradvel_z;
+		this->ngradvel = rp.ngradvel;
 
 	}
 	PS::F64vec getPos() const {
