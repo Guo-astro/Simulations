@@ -79,8 +79,6 @@ public:
 
 	PS::F64vec rot_v;
 	PS::F64vec gradV;
-	PS::F64vec graddens;
-	PS::F64vec gradpres;
 	PS::F64vec gradvel_x;
 	PS::F64vec gradvel_y;
 	PS::F64vec gradvel_z;
@@ -113,8 +111,6 @@ public:
 		div_v = 0.0;
 		rot_v = 0.0;
 		gradV = 0.0;
-		graddens = 0.0;
-		gradpres = 0.0;
 		gradvel_x = 0.;
 		gradvel_y = 0.;
 		gradvel_z = 0.;
@@ -125,12 +121,7 @@ public:
 		ngradPT = 0.0;
 		ngradVpara = 0.0;
 		ngradBperp2 = 0.0;
-		ngradvperp_x = 0;
-		ngradvperp_y = 0;
-		ngradvperp_z = 0.0;
-		ngradBperp_x = 0;
-		ngradBperp_y = 0;
-		ngradBperp_z = 0.0;
+
 		nrot_v = 0.0;
 		ngradV = 0.0;
 		ngraddens = 0.0;
@@ -260,8 +251,6 @@ public:
 	void copyFromForce(const RESULT::Drvt& drvt) {
 
 		this->gradV = drvt.gradV;
-		this->graddens = drvt.graddens;
-		this->gradpres = drvt.gradpres;
 		this->gradvel_x = drvt.gradvel_x;
 		this->gradvel_y = drvt.gradvel_y;
 		this->gradvel_z = drvt.gradvel_z;
