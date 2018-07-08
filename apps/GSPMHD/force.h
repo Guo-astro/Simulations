@@ -174,6 +174,9 @@ public:
 
 				calcRPMoC(ith.dt, Pt_RP, VparaRP, BperpMoC, VperpMoC, P_Bpara,
 						BparaStar, Gamma, ndir, ith, jth);
+
+
+
 				const PS::F64vec fac_acc_correc = BparaStar * ith.MagneticB;
 
 				const PS::F64vec fac_acc = -(Pt_RP - P_Bpara) * ndir
@@ -282,18 +285,18 @@ public:
 		//////////////////////////Original Variables Finish/////////////////////////////////////////////////////////////////////////////
 		//////////////////////////Original Derivative Variables Start/////////////////////////////////////////////////////////////////////////////
 		/**Left j**/
-		const PS::F64 drv_densL = ep_L.ngrad_dens;
-		const PS::F64 drv_velparaL = ep_L.ngradVpara;
-		const PS::F64 drv_BperpL2 = ep_L.ngradBperp2;
-		const PS::F64 drv_PresL = ep_L.ngradP;
-		const PS::F64 drv_PTL = ep_L.ngradPT;
+		const PS::F64 drv_densL =ep_L.grad_dens*ndir;
+		const PS::F64 drv_velparaL =ep_L.gradVpara*ndir;
+		const PS::F64 drv_BperpL2 = ep_L.gradBperp2*ndir;
+		const PS::F64 drv_PresL = ep_L.gradP*ndir;
+		const PS::F64 drv_PTL = ep_L.gradPT*ndir;
 
 		/**Right i**/
-		const PS::F64 drv_densR = ep_R.ngrad_dens;
-		const PS::F64 drv_velparaR = ep_R.ngradVpara;
-		const PS::F64 drv_BperpR2 = ep_R.ngradBperp2;
-		const PS::F64 drv_PresR = ep_R.ngradP;
-		const PS::F64 drv_PTR = ep_R.ngradPT;
+		const PS::F64 drv_densR = ep_R.grad_dens*ndir;
+		const PS::F64 drv_velparaR = ep_R.gradVpara*ndir;
+		const PS::F64 drv_BperpR2 = ep_R.gradBperp2*ndir;
+		const PS::F64 drv_PresR = ep_R.gradP*ndir;
+		const PS::F64 drv_PTR = ep_R.gradPT*ndir;
 
 		//////////////////////////Original Derivative Variables Finish/////////////////////////////////////////////////////////////////////////////
 		//////////////////////////Original Derived Variables Start/////////////////////////////////////////////////////////////////////////////
@@ -334,11 +337,11 @@ public:
 		const PS::F64 DiffPTL = orig_PTL - orig_PTR;
 		const PS::F64 DiffBperpL2 = orig_BperpL2 - orig_BperpR2;
 		/**Left j**/
-		const PS::F64 DeltaVparaL = drv_velparaL * deltaS;
-		const PS::F64 DeltaDensL = drv_densL * deltaS;
-		const PS::F64 DeltaPresL = drv_PresL * deltaS;
-		const PS::F64 DeltaPTL = drv_PTL * deltaS;
-		const PS::F64 DeltaBperpL2 = drv_BperpL2 * deltaS;
+		const PS::F64 DeltaVparaL = -drv_velparaL * deltaS;
+		const PS::F64 DeltaDensL = -drv_densL * deltaS;
+		const PS::F64 DeltaPresL = -drv_PresL * deltaS;
+		const PS::F64 DeltaPTL = -drv_PTL * deltaS;
+		const PS::F64 DeltaBperpL2 = -drv_BperpL2 * deltaS;
 
 		const PS::F64 DeltaVpara_dashL = 2.0 * DeltaVparaL - DiffVparaL;
 		const PS::F64 DeltaDens_dashL = 2.0 * DeltaDensL - DiffDensL;
@@ -361,7 +364,7 @@ public:
 //		//////////////////////////Monotone Variables Finish////////////////////////////////////////////////////////////////////////////
 //		//////////////////////////Monotone Constraints Start////////////////////////////////////////////////////////////////////////////
 		const PS::F64 DeltaVparaL_mono =
-				(sgn(-DiffVparaL) == sgn(DeltaVparaL)
+				(sgn(DiffVparaL) == sgn(DeltaVparaL)
 						&& sgn(DeltaVparaL) == sgn(DeltaVpara_dashL)) ?
 						sgn(DeltaVparaL)
 								* trimin(2.0 * fabs(DiffVparaL),
@@ -369,7 +372,7 @@ public:
 										2.0 * fabs(DeltaVpara_dashL)) :
 						0.0;
 		const PS::F64 DeltaDensL_mono =
-				(sgn(-DiffDensL) == sgn(DeltaDensL)
+				(sgn(DiffDensL) == sgn(DeltaDensL)
 						&& sgn(DeltaDensL) == sgn(DeltaDens_dashL)) ?
 						sgn(DeltaDensL)
 								* trimin(2.0 * fabs(DiffDensL),
@@ -377,7 +380,7 @@ public:
 										2.0 * fabs(DeltaDens_dashL)) :
 						0.0;
 		const PS::F64 DeltaPresL_mono =
-				(sgn(-DiffPresL) == sgn(DeltaPresL)
+				(sgn(DiffPresL) == sgn(DeltaPresL)
 						&& sgn(DeltaPresL) == sgn(DeltaPres_dashL)) ?
 						sgn(DeltaPresL)
 								* trimin(2.0 * fabs(DiffPresL),
@@ -385,14 +388,14 @@ public:
 										2.0 * fabs(DeltaPres_dashL)) :
 						0.0;
 		const PS::F64 DeltaPTL_mono =
-				(sgn(-DiffPTL) == sgn(DeltaPTL)
+				(sgn(DiffPTL) == sgn(DeltaPTL)
 						&& sgn(DeltaPTL) == sgn(DeltaPT_dashL)) ?
 						sgn(DeltaPTL)
 								* trimin(2.0 * fabs(DiffPTL), fabs(DeltaPTL),
 										2.0 * fabs(DeltaPT_dashL)) :
 						0.0;
 		const PS::F64 DeltaBperpL2_mono =
-				(sgn(-DiffBperpL2) == sgn(DeltaBperpL2)
+				(sgn(DiffBperpL2) == sgn(DeltaBperpL2)
 						&& sgn(DeltaBperpL2) == sgn(DeltaBperp_dashL2)) ?
 						sgn(DeltaBperpL2)
 								* trimin(2.0 * fabs(DiffBperpL2),
@@ -469,7 +472,7 @@ public:
 		const PS::F64 C_fastL = sqrt(
 				(gamma * ep_L.pres + orig_MagneticBL * orig_MagneticBL)
 						* orig_idensL);
-		const PS::F64 dod_facLRP = -.5 * (1.0 - C_fastL * dt / deltaS);
+		const PS::F64 dod_facLRP = .5 * (1.0 - C_fastL * dt / deltaS);
 		const PS::F64 C_fastR = sqrt(
 				(gamma * ep_R.pres + orig_MagneticBR * orig_MagneticBR)
 						* orig_idensR);
@@ -615,18 +618,18 @@ public:
 
 		const PS::F64vec orig_vperpL = ep_L.vel - (ep_L.vel * ndir) * ndir;
 		const PS::F64vec orig_vperpR = ep_R.vel - (ep_R.vel * ndir) * ndir;
-		const PS::F64 drv_vperpxL = ep_L.ngradvperp_x;
-		const PS::F64 drv_vperpyL = ep_L.ngradvperp_y;
-		const PS::F64 drv_vperpzL = ep_L.ngradvperp_z;
-		const PS::F64 drv_BperpxL = ep_L.ngradBperp_x;
-		const PS::F64 drv_BperpyL = ep_L.ngradBperp_y;
-		const PS::F64 drv_BperpzL = ep_L.ngradBperp_z;
-		const PS::F64 drv_vperpxR = ep_R.ngradvperp_x;
-		const PS::F64 drv_vperpyR = ep_R.ngradvperp_y;
-		const PS::F64 drv_vperpzR = ep_R.ngradvperp_z;
-		const PS::F64 drv_BperpxR = ep_R.ngradBperp_x;
-		const PS::F64 drv_BperpyR = ep_R.ngradBperp_y;
-		const PS::F64 drv_BperpzR = ep_R.ngradBperp_z;
+		const PS::F64 drv_vperpxL = ep_L.gradvperp_x*ndir;
+		const PS::F64 drv_vperpyL = ep_L.gradvperp_y*ndir;
+		const PS::F64 drv_vperpzL = ep_L.gradvperp_z*ndir;
+		const PS::F64 drv_BperpxL = ep_L.gradBperp_x*ndir;
+		const PS::F64 drv_BperpyL = ep_L.gradBperp_y*ndir;
+		const PS::F64 drv_BperpzL = ep_L.gradBperp_z*ndir;
+		const PS::F64 drv_vperpxR = ep_R.gradvperp_x*ndir;
+		const PS::F64 drv_vperpyR = ep_R.gradvperp_y*ndir;
+		const PS::F64 drv_vperpzR = ep_R.gradvperp_z*ndir;
+		const PS::F64 drv_BperpxR = ep_R.gradBperp_x*ndir;
+		const PS::F64 drv_BperpyR = ep_R.gradBperp_y*ndir;
+		const PS::F64 drv_BperpzR = ep_R.gradBperp_z*ndir;
 //
 
 		//ToDO Using Riemann Invariant
@@ -635,9 +638,9 @@ public:
 		const PS::F64vec orig_JMinusL = orig_vperpL
 				+ sgn(_Bpara)*orig_BperpL * orig_idensLsqrt;
 		const PS::F64vec orig_JMinusR = orig_vperpR
-				-sgn(_Bpara)* orig_BperpR * orig_idensRsqrt;
+				+sgn(_Bpara)* orig_BperpR * orig_idensRsqrt;
 		const PS::F64vec orig_JPlusR = orig_vperpR
-				+ sgn(_Bpara)*orig_BperpR * orig_idensRsqrt;
+				- sgn(_Bpara)*orig_BperpR * orig_idensRsqrt;
 
 //
 
@@ -656,18 +659,18 @@ public:
 				+sgn(_Bpara)*  drv_BperpzL * orig_idensLsqrt;
 
 		const PS::F64 drv_JPlusxR = drv_vperpxR
-				+sgn(_Bpara)*  drv_BperpxR * orig_idensRsqrt;
+				-sgn(_Bpara)*  drv_BperpxR * orig_idensRsqrt;
 		const PS::F64 drv_JPlusyR = drv_vperpyR
-				+ sgn(_Bpara)* drv_BperpyR * orig_idensRsqrt;
+				- sgn(_Bpara)* drv_BperpyR * orig_idensRsqrt;
 		const PS::F64 drv_JPluszR = drv_vperpzR
-				+ sgn(_Bpara)* drv_BperpzR * orig_idensRsqrt;
+				- sgn(_Bpara)* drv_BperpzR * orig_idensRsqrt;
 
 		const PS::F64 drv_JMinusxR = drv_vperpxR
-				- sgn(_Bpara)* drv_BperpxR * orig_idensRsqrt;
+				+ sgn(_Bpara)* drv_BperpxR * orig_idensRsqrt;
 		const PS::F64 drv_JMinusyR = drv_vperpyR
-				- sgn(_Bpara)* drv_BperpyR * orig_idensRsqrt;
+				+ sgn(_Bpara)* drv_BperpyR * orig_idensRsqrt;
 		const PS::F64 drv_JMinuszR = drv_vperpzR
-				- sgn(_Bpara)* drv_BperpzR * orig_idensRsqrt;
+				+ sgn(_Bpara)* drv_BperpzR * orig_idensRsqrt;
 
 //
 
@@ -678,17 +681,17 @@ public:
 
 		const PS::F64vec DiffJMinusR = orig_JMinusR - orig_JMinusL;
 
-		const PS::F64 DeltaJPlusxL = drv_JPlusxL * deltaS;
-		const PS::F64 DeltaJPlusyL = drv_JPlusyL * deltaS;
-		const PS::F64 DeltaJPluszL = drv_JPluszL * deltaS;
+		const PS::F64 DeltaJPlusxL = -drv_JPlusxL * deltaS;
+		const PS::F64 DeltaJPlusyL = -drv_JPlusyL * deltaS;
+		const PS::F64 DeltaJPluszL = -drv_JPluszL * deltaS;
 
 		const PS::F64 DeltaJPlusxR = drv_JPlusxR * deltaS;
 		const PS::F64 DeltaJPlusyR = drv_JPlusyR * deltaS;
 		const PS::F64 DeltaJPluszR = drv_JPluszR * deltaS;
 
-		const PS::F64 DeltaJMinusxL = drv_JMinusxL * deltaS;
-		const PS::F64 DeltaJMinusyL = drv_JMinusyL * deltaS;
-		const PS::F64 DeltaJMinuszL = drv_JMinuszL * deltaS;
+		const PS::F64 DeltaJMinusxL = -drv_JMinusxL * deltaS;
+		const PS::F64 DeltaJMinusyL = -drv_JMinusyL * deltaS;
+		const PS::F64 DeltaJMinuszL = -drv_JMinuszL * deltaS;
 
 		const PS::F64 DeltaJMinusxR = drv_JMinusxR * deltaS;
 		const PS::F64 DeltaJMinusyR = drv_JMinusyR * deltaS;
@@ -823,7 +826,7 @@ public:
 
 		const PS::F64 C_alvenL = fabs(orig_BparaL) * orig_idensLsqrt;
 		const PS::F64 C_alvenR = fabs(orig_BparaR) * orig_idensRsqrt;
-		const PS::F64 dod_fac_AlfvenL = -.5 * (1.0 - C_alvenL * dt / deltaS);
+		const PS::F64 dod_fac_AlfvenL = .5 * (1.0 - C_alvenL * dt / deltaS);
 		const PS::F64 dod_fac_AlfvenR = .5 * (1.0 - C_alvenR * dt / deltaS);
 		const PS::F64 fac_densLMoC = DeltaDensL_mono * dod_fac_AlfvenL;
 		const PS::F64 fac_densRMoC = DeltaDensR_mono * dod_fac_AlfvenR;
