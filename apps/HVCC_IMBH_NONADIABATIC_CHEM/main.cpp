@@ -11,7 +11,8 @@ void makeOutputDirectory(const char * dir_name) {
 		PS::Comm::broadcast(&ret, 1);
 		if (ret == 0) {
 			if (PS::Comm::getRank() == 0)
-				fprintf(stderr, "Directory \"%s\" is successfully made.\n", dir_name);
+				fprintf(stderr, "Directory \"%s\" is successfully made.\n",
+						dir_name);
 		} else {
 			fprintf(stderr, "Directory %s fails to be made.\n", dir_name);
 			PS::Abort();
@@ -20,15 +21,40 @@ void makeOutputDirectory(const char * dir_name) {
 }
 
 int main(int argc, char* argv[]) {
-	//////////////////
-	//Create vars.
-	//////////////////
+
+//	for (int i = 0; i < 1e6; i++) {
+//		double T = i;
+//		double NUMDENS_CGS = 1e8;
+//		double abundance_HI = 0.1;
+//		double abundance_e = 0.1;
+//		double abundance_H2 = 0.1;
+//		double abundance_HII = 0.1;
+//		double abundance_CII = 0.1;
+//		double abundance_FeII = 0.1;
+//		double abundance_SiII = 0.1;
+//		double abundance_CI = 0.1;
+//		double abundance_OI = 0.1;
+//		double abundance_CO = 0.1;
+//		double dust_to_gas_ratio = PARAM::dust_to_gas_ratio;
+//		double gt = PARAM::Grain_T;
+//		double gs = PARAM::grain_size;
+//		double lambda = rate_Lambda(T, NUMDENS_CGS, abundance_HI, abundance_e,
+//				abundance_H2, abundance_HII, abundance_CII, abundance_FeII,
+//				abundance_SiII, abundance_CI, abundance_OI, abundance_CO,
+//				dust_to_gas_ratio, gt, gs);
+//		std::cout << lambda << std::endl;
+//	}
+
+	////////////////
+//	Create vars.
+	////////////////
 	PS::Initialize(argc, argv);
 	makeOutputDirectory("result");
 	makeOutputDirectory("result_vtk");
 	PS::ParticleSystem<RealPtcl> sph_system;
 	sph_system.initialize();
 	PS::DomainInfo dinfo;
+	std::cout << "---" << std::endl;
 
 	boundary box;
 	PS::F64 dt, end_time;
@@ -54,12 +80,12 @@ int main(int argc, char* argv[]) {
 
 	//plant tree
 	PS::TreeForForceShort<RESULT::Dens, EPI::Dens, EPJ::Dens>::Gather dens_tree;
-	PS::TreeForForceShort<RESULT::Drvt, EPI::Drvt, EPJ::Drvt>::Gather drvt_tree;
+//	PS::TreeForForceShort<RESULT::Drvt, EPI::Drvt, EPJ::Drvt>::Gather drvt_tree;
 	PS::TreeForForceShort<RESULT::Hydro, EPI::Hydro, EPJ::Hydro>::Symmetry hydr_tree;
 	PS::TreeForForceLong<RESULT::Grav, EPI::Grav, EPJ::Grav>::Monopole grav_tree;
 
 	dens_tree.initialize(sph_system.getNumberOfParticleGlobal());
-	drvt_tree.initialize(sph_system.getNumberOfParticleGlobal());
+//	drvt_tree.initialize(sph_system.getNumberOfParticleGlobal());
 	hydr_tree.initialize(sph_system.getNumberOfParticleGlobal());
 	grav_tree.initialize(sph_system.getNumberOfParticleGlobal());
 
@@ -70,7 +96,7 @@ int main(int argc, char* argv[]) {
 
 		sph_system[i].setPressure();
 	}
-	drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
+//	drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
 	hydr_tree.calcForceAllAndWriteBack(CalcHydroForce(), sph_system, dinfo);
 	grav_tree.calcForceAllAndWriteBack(CalcGravityForce<EPJ::Grav>(), CalcGravityForce<PS::SPJMonopole>(), sph_system, dinfo);
 	PS::F64 time = 0.0;
@@ -106,8 +132,8 @@ int main(int argc, char* argv[]) {
 		}
 		std::cout << "//====setpres==================" << std::endl;
 
-		drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
-		std::cout << "//====drvt==================" << std::endl;
+//		drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
+//		std::cout << "//====drvt==================" << std::endl;
 
 		hydr_tree.calcForceAllAndWriteBack(CalcHydroForce(), sph_system, dinfo);
 		std::cout << "//====hydra==================" << std::endl;

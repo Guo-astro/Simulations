@@ -118,7 +118,7 @@ void SetupICBrioWu(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
 	*end_time = 0.77;
 
 	const PS::F64 dx = 4e-3;
-	box->x = 2. * sqrt(2);
+	box->x = 2. * 1.4;
 	box->y = 2. * 7.0 * sqrt(3) * dx;
 	box->z = dx;
 	PS::S32 id = 0;
@@ -145,12 +145,12 @@ void SetupICBrioWu(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
 				ith.vel.y = 0;
 				ith.vel.z = 0;
 
-				ith.MagneticB.x = 0;
+				ith.MagneticB.x = 0.75;
 				ith.MagneticB.y = 1.0;
-				ith.MagneticB.z = 0.75;
+				ith.MagneticB.z =0.0;
 				ith.BoverDens = ith.MagneticB / ith.dens;
 				ith.eng = .5 * ith.vel * ith.vel
-						+ ith.pres / ((2.0 - 1.0) * ith.dens)
+						+ ith.pres / ((PARAM::GAMMA  - 1.0) * ith.dens)
 						+ .5 * ith.MagneticB * ith.MagneticB / ith.dens;
 				ith.id = id++;
 				ptcl.push_back(ith);
@@ -181,9 +181,9 @@ void SetupICBrioWu(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time,
 				ith.vel.y = 0;
 				ith.vel.z = 0;
 
-				ith.MagneticB.x = 0.0;
+				ith.MagneticB.x =0.75;
 				ith.MagneticB.y = -1;
-				ith.MagneticB.z = 0.75;
+				ith.MagneticB.z = 0.0;
 				ith.BoverDens = ith.MagneticB / ith.dens;
 				ith.eng = .5 * ith.vel * ith.vel
 						+ ith.pres / ((PARAM::GAMMA - 1.0) * ith.dens)
@@ -702,11 +702,11 @@ void SetupICFieldLoop(PS::ParticleSystem<RealPtcl>& sph_system,
 
 				ith.pres = 1.0;
 				double r = sqrt(ith.pos * ith.pos);
-				if (r <= 0.3&&r>0.0) {
+				if (r <= 0.3 && r > 0.0) {
 					ith.dens = 1.0;
 					ith.MagneticB.x = 1.e-3 * ith.pos.y / r;
 					ith.MagneticB.y = -1.e-3 * ith.pos.x / r;
-					ith.MagneticB.z=0.0;
+					ith.MagneticB.z = 0.0;
 				} else {
 					ith.MagneticB = 0.0;
 				}
@@ -722,7 +722,7 @@ void SetupICFieldLoop(PS::ParticleSystem<RealPtcl>& sph_system,
 	}
 
 	for (PS::U32 i = 0; i < ptcl.size(); ++i) {
-		ptcl[i].mass = 4.0*box->x * box->y * box->z * ptcl[i].dens
+		ptcl[i].mass = 4.0 * box->x * box->y * box->z * ptcl[i].dens
 				/ (PS::F64) (ptcl.size());
 
 	}

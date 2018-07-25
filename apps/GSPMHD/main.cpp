@@ -63,12 +63,12 @@ int main(int argc, char* argv[]) {
 	PS::TreeForForceShort<RESULT::Dens, EPI::Dens, EPJ::Dens>::Gather dens_tree;
 	PS::TreeForForceShort<RESULT::Drvt , EPI::Drvt , EPJ::Drvt >::Gather   drvt_tree;
 	PS::TreeForForceShort<RESULT::Hydro, EPI::Hydro, EPJ::Hydro>::Symmetry hydr_tree;
-//	PS::TreeForForceLong <RESULT::Grav , EPI::Grav , EPJ::Grav >::Monopole grav_tree;
+	PS::TreeForForceLong <RESULT::Grav , EPI::Grav , EPJ::Grav >::Monopole grav_tree;
 
 	dens_tree.initialize(sph_system.getNumberOfParticleGlobal());
 	drvt_tree.initialize(sph_system.getNumberOfParticleGlobal());
 	hydr_tree.initialize(sph_system.getNumberOfParticleGlobal());
-//	grav_tree.initialize(sph_system.getNumberOfParticleGlobal());
+	grav_tree.initialize(sph_system.getNumberOfParticleGlobal());
 
 	for (int loop = 0; loop <= 5; ++loop) {
 		dens_tree.calcForceAllAndWriteBack(CalcDensity(), sph_system, dinfo);
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	}
 	drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
 	hydr_tree.calcForceAllAndWriteBack(CalcHydroForce(), sph_system, dinfo);
-//	grav_tree.calcForceAllAndWriteBack(CalcGravityForce<EPJ::Grav>(), CalcGravityForce<PS::SPJMonopole>(), sph_system, dinfo);
+	grav_tree.calcForceAllAndWriteBack(CalcGravityForce<EPJ::Grav>(), CalcGravityForce<PS::SPJMonopole>(), sph_system, dinfo);
 
 	dt = getTimeStepGlobal(sph_system);
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 		}
 		drvt_tree.calcForceAllAndWriteBack(CalcDerivative(), sph_system, dinfo);
 		hydr_tree.calcForceAllAndWriteBack(CalcHydroForce(), sph_system, dinfo);
-//		grav_tree.calcForceAllAndWriteBack(CalcGravityForce<EPJ::Grav>(), CalcGravityForce<PS::SPJMonopole>(), sph_system, dinfo);
+		grav_tree.calcForceAllAndWriteBack(CalcGravityForce<EPJ::Grav>(), CalcGravityForce<PS::SPJMonopole>(), sph_system, dinfo);
 
 		dt = getTimeStepGlobal(sph_system);
 

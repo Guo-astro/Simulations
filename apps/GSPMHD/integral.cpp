@@ -78,7 +78,7 @@ void FinalKick(PS::ParticleSystem<RealPtcl>& sph_system, const PS::F64 dt) {
 		sph_system[i].pos += dt * sph_system[i].vel;
 		sph_system[i].deltaB +=  sph_system[i].smth*fabs(sph_system[i].dens*sph_system[i].div_B)/sqrt(sph_system[i].MagneticB*sph_system[i].MagneticB)/sph_system.getNumberOfParticleLocal();
 
-		sph_system[i].pos.z = 0.0;
+//		sph_system[i].pos.z = 0.0;
 
 //		sph_system[i].MagneticB.z = 0.0;
 //		if (sph_system[i].eng

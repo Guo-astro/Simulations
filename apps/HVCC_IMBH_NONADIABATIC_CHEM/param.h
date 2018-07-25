@@ -53,8 +53,8 @@ const double poly_E = (3. / (5. - poly_n)) * G * poly_M / poly_r;
 //////////////////////////////////////////////////
 
 //const double SM = 30 * M_SUN_cgs;
-const double SM =1000*M_SUN_cgs/poly_M;
-const double SL = 0.6*pc_cgs;
+const double SM =1400*M_SUN_cgs/poly_M;
+const double SL = 0.5*pc_cgs;
 const double ST = sqrt(pow(SL, 3.0) / SM / (4 * M_PI * G_cgs));
 //////////////////////////////////////////////////
 /////////////Combination SUnits////////////////////

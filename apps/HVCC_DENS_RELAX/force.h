@@ -218,21 +218,26 @@ public:
 		//		double g = 1.867615193618750E-03;
 		//		double h = -1.388085203319444E-04;
 		//		double i = 2.998565502661576E-07;
-//		double i = 1.193e-16;
-//		double h = -9.659e-14;
-//		double g = +3.172e-11;
-//		double f = -5.37e-09;
-//		double e = +4.87e-07;
-//		double d = -2.107e-05;
-//		double c = +0.0001497;
-//		double b = +0.01751;
-//		double a = -0.4394;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
-		double phi = -1.47*pow(1.0 + pow(x / 2.88, 2.0), -2.47)*2.*x/(2.88*2.88);
+	//		double i = 1.193e-16;
+	//		double h = -9.659e-14;
+	//		double g = +3.172e-11;
+	//		double f = -5.37e-09;
+	//		double e = +4.87e-07;
+	//		double d = -2.107e-05;
+	//		double c = +0.0001497;
+	//		double b = +0.01751;
+	//		double a = -0.4394;
+	//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+		double a1 = 1.81178953;
+		double b1 = 3.2662366;
+		double c1 = 1.11317173;
+		double phi = a1 * pow(1 + pow(x / b1, 2), -c1) * 2 * x / (b1 * b1);
 
 		return phi;
 
 	}
+
 	void operator ()(const EPI::Hydro* const ep_i, const PS::S32 Nip, const EPJ::Hydro* const ep_j, const PS::S32 Njp, RESULT::Hydro* const hydro) {
 
 		for (PS::S32 i = 0; i < Nip; ++i) {
@@ -276,7 +281,7 @@ public:
 			//				hydro[i].acc += ( v )* acc_factor;
 //			double rc = 1;
 //			hydro[i].acc -= -1.47 * pow(1. + pow(_r / (2.88 * rc), 2), -2.47) * (_r / (1.44 * rc)) * acc_factor;
-			hydro[i].acc +=(current_phi_dash) * acc_factor;
+			hydro[i].acc +=-(current_phi_dash) * acc_factor;
 
 		}
 	}
@@ -299,4 +304,5 @@ public:
 		}
 	}
 };
+
 

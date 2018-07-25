@@ -30,8 +30,6 @@ int main(int argc, char* argv[]) {
 	PS::DomainInfo dinfo;
 
 	PS::F64 dt, end_time;
-//	SetupIC_PolytropeTest_file(sph_system, &end_time);
-
 	SetupIC_Polytrope_Dens_Relaxation(sph_system, &end_time);
 
 	dinfo.initialize();
@@ -122,4 +120,5 @@ int main(int argc, char* argv[]) {
 	PS::Finalize();
 	return 0;
 }
+
 

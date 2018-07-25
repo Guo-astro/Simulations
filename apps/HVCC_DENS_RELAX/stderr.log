@@ -1,0 +1,27 @@
+     //==================================\\
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 4.0 (2017/11)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (2016, Publications of the Astronomical Society of Japan, 68, 54)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanikawa, Natsuki Hosono,
+         Keigo Nitadori, Takayuki Muranushi, Daisuke Namekata,
+         Kentaro Nomura, Junichiro Makino and many others
+******** FDPS has successfully begun. ********
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: got SIGCONT
+srun: got SIGCONT
+slurmstepd: error: *** STEP 190987.0 ON nid00312 CANCELLED AT 2018-04-22T10:40:19 ***
+slurmstepd: error: *** JOB 190987 ON nid00312 CANCELLED AT 2018-04-22T10:40:19 ***
+srun: forcing job termination

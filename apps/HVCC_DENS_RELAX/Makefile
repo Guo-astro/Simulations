@@ -5,14 +5,14 @@ CC = time g++
 CFLAGS = -O3
 #CFLAGS += -ffast-math
 CFLAGS += -funroll-loops 
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL
-#CFLAGS += -fopenmp
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL
+CFLAGS += -fopenmp
 #CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 #CFLAGS += #-Wall -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wfloat-equal -Wpointer-arith
 
 CPPOBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 CPPHDRS = $(wildcard *.h)
-PROGRAM = hvcc_dens_relax.out
+PROGRAM = gspmhd.out
 
 .PHONY:	clean all
 

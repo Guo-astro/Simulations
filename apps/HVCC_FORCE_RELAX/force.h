@@ -3,7 +3,9 @@
 class CalcDensity {
 	kernel_t kernel;
 public:
-	void operator ()(const EPI::Dens* const ep_i, const PS::S32 Nip, const EPJ::Dens* const ep_j, const PS::S32 Njp, RESULT::Dens* const dens) {
+	void operator ()(const EPI::Dens* const ep_i, const PS::S32 Nip,
+			const EPJ::Dens* const ep_j, const PS::S32 Njp,
+			RESULT::Dens* const dens) {
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			dens[i].clear();
 			const EPI::Dens& ith = ep_i[i];
@@ -17,7 +19,8 @@ public:
 				}
 			}
 
-			dens[i].smth = PARAM::SMTH * pow(ith.mass / dens[i].dens, 1.0 / (PS::F64)(PARAM::Dim));
+			dens[i].smth = PARAM::SMTH
+					* pow(ith.mass / dens[i].dens, 1.0 / (PS::F64)(PARAM::Dim));
 		}
 	}
 };
@@ -25,7 +28,9 @@ public:
 class CalcDerivative {
 	kernel_t kernel;
 public:
-	void operator ()(const EPI::Drvt* ep_i, const PS::S32 Nip, const EPJ::Drvt* ep_j, const PS::S32 Njp, RESULT::Drvt* const drvt) {
+	void operator ()(const EPI::Drvt* ep_i, const PS::S32 Nip,
+			const EPJ::Drvt* ep_j, const PS::S32 Njp,
+			RESULT::Drvt* const drvt) {
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			drvt[i].clear();
 			const EPI::Drvt& ith = ep_i[i];
@@ -38,27 +43,44 @@ public:
 					continue;
 				}
 				const PS::F64vec ndir = dr / sqrt(dr * dr);
-				const PS::F64vec MagneticBPerpj = jth.MagneticB - (jth.MagneticB * ndir) * ndir;
-				const PS::F64vec MagneticBPerpi = ith.MagneticB - (ith.MagneticB * ndir) * ndir;
+				const PS::F64vec MagneticBPerpj = jth.MagneticB
+						- (jth.MagneticB * ndir) * ndir;
+				const PS::F64vec MagneticBPerpi = ith.MagneticB
+						- (ith.MagneticB * ndir) * ndir;
 				const PS::F64 Bperpj2 = MagneticBPerpj * MagneticBPerpj;
 				const PS::F64 Bperpi2 = MagneticBPerpi * MagneticBPerpi;
-				const PS::F64 PTj = jth.pres + .5 * MagneticBPerpj * MagneticBPerpj;
-				const PS::F64 PTi = ith.pres + .5 * MagneticBPerpi * MagneticBPerpi;
+				const PS::F64 PTj = jth.pres
+						+ .5 * MagneticBPerpj * MagneticBPerpj;
+				const PS::F64 PTi = ith.pres
+						+ .5 * MagneticBPerpi * MagneticBPerpi;
 				const PS::F64vec vperpj = jth.vel - (jth.vel * ndir) * ndir;
 				const PS::F64vec vperpi = ith.vel - (ith.vel * ndir) * ndir;
 				drvt[i].grad_dens += jth.mass * kernel.gradW(dr, ith.smth);
-				drvt[i].gradP += jth.mass * (jth.pres - ith.pres) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradVpara += jth.mass * ((jth.vel - ith.vel) * ndir) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradvperp_x += jth.mass * (vperpj.x - vperpi.x) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradvperp_y += jth.mass * (vperpj.y - vperpi.y) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradvperp_z += jth.mass * (vperpj.z - vperpi.z) * kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradP += jth.mass * (jth.pres - ith.pres)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradVpara += jth.mass * ((jth.vel - ith.vel) * ndir)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradvperp_x += jth.mass * (vperpj.x - vperpi.x)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradvperp_y += jth.mass * (vperpj.y - vperpi.y)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradvperp_z += jth.mass * (vperpj.z - vperpi.z)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
 
-				drvt[i].gradBperp_x += jth.mass * (MagneticBPerpj.x - MagneticBPerpi.x) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradBperp_y += jth.mass * (MagneticBPerpj.y - MagneticBPerpi.y) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradBperp_z += jth.mass * (MagneticBPerpj.z - MagneticBPerpi.z) * kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradBperp_x += jth.mass
+						* (MagneticBPerpj.x - MagneticBPerpi.x)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradBperp_y += jth.mass
+						* (MagneticBPerpj.y - MagneticBPerpi.y)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradBperp_z += jth.mass
+						* (MagneticBPerpj.z - MagneticBPerpi.z)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
 
-				drvt[i].gradBperp2 += jth.mass * (Bperpj2 - Bperpi2) * kernel.gradW(dr, ith.smth) / jth.dens;
-				drvt[i].gradPT += jth.mass * (PTj - PTi) * kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradBperp2 += jth.mass * (Bperpj2 - Bperpi2)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
+				drvt[i].gradPT += jth.mass * (PTj - PTi)
+						* kernel.gradW(dr, ith.smth) / jth.dens;
 
 			}
 
@@ -74,7 +96,9 @@ class CalcHydroForce {
 	const PS::F64 dxi = -0.2033013;
 	const PS::F64 ddxi = -xi * xi * dxi;
 public:
-	void calc_Vij2_and_ss(const EPI::Hydro ep_i, const EPJ::Hydro ep_j, PS::F64&Vij2_hi, PS::F64&Vij2_hj, PS::F64& ssP, const PS::F64 delta, const PS::F64vec eij) {
+	void calc_Vij2_and_ss(const EPI::Hydro ep_i, const EPJ::Hydro ep_j,
+			PS::F64&Vij2_hi, PS::F64&Vij2_hj, PS::F64& ssP, const PS::F64 delta,
+			const PS::F64vec eij) {
 		//		const PS::F64 dVi = ep_i.gradV * eij;
 		//		const PS::F64 dVj = ep_j.gradV * eij;
 		const PS::F64 Vi = 1.0 / ep_i.dens;
@@ -97,95 +121,158 @@ public:
 		//		Vij2_hj = ((0.234375 * hj2 * Aij * Aij + 0.1875 * (2 * Aij * Cij + Bij * Bij)) * hj2 + 0.25 * (2 * Bij * Dij + Cij * Cij)) * hj2 + Dij * Dij;
 		//		ssP = 0.5 * (((0.46875 * hi2 * Aij * Bij + 0.375 * (Aij * Dij + Bij * Cij)) * hi2 + 0.5 * Cij * Dij) * hi2 / Vij2_hi + ((0.46875 * hj2 * Aij * Bij + 0.375 * (Aij * Dij + Bij * Cij)) * hj2 + 0.5 * Cij * Dij) * hj2 / Vij2_hj);
 	}
-	void calc_riemann_solver(const EPI::Hydro ep_i, const EPJ::Hydro ep_j, const PS::F64 ss, const PS::F64 delta, const PS::F64vec eij, const PS::F64 dt, PS::F64 &pstar, PS::F64 &vstar) {
-		PS::F64 rho1, rho2, v1, v2, p1, p2;
-		PS::F64 vi = ep_i.vel * eij;
-		PS::F64 vj = ep_j.vel * eij;
-		PS::F64 drdsi, drdsj, dpdsi, dpdsj, dvdsi, dvdsj;
-
+	void calc_riemann_solver(const EPI::Hydro ep_R, const EPJ::Hydro ep_L,
+			const PS::F64 ss, const PS::F64 delta, const PS::F64vec eij,
+			const PS::F64 dt, PS::F64 &pstar, PS::F64 &vstar
+			) {
 		PS::F64 si = .5 * delta;
 		PS::F64 sj = .5 * delta;
-		drdsi = ep_i.grad_dens * eij;
-		drdsj = ep_j.grad_dens * eij;
-		dpdsi = ep_i.gradP * eij;
-		dpdsj = ep_j.gradP * eij;
-		if (dvdsi * dvdsj < 0.0 || drdsi * drdsj < 0.0 || dpdsi * dpdsj < 0.0) {
-			dvdsi = 0.0;
-			dvdsj = 0.0;
-		}
-		if (3.0 * fabs(vj - vi) > ((ep_i.snds < ep_j.snds) ? ep_i.snds : ep_j.snds)) {
-			//		//monotonisity constraint
+		PS::F64 drdsR = ep_R.grad_dens * eij;
+		PS::F64 drdsL = ep_L.grad_dens * eij;
+		PS::F64 dpdsR = ep_R.gradP * eij;
+		PS::F64 dpdsL = ep_L.gradP * eij;
+		PS::F64 vR = ep_R.vel * eij;
+		PS::F64 vL = ep_L.vel * eij;
 
-			drdsi = drdsj = 0.0;
-			dpdsi = dpdsj = 0.0;
-			dvdsi = dvdsj = 0.0;
-		}
-		double ddensi = drdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double dpresi = dpdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double dveli = dvdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double ddensj = drdsj * (ss - ep_j.snds * 0.5 * dt + sj);
-		double dpresj = dpdsj * (ss - ep_j.snds * 0.5 * dt + sj);
-		double dvelj = dvdsj * (ss - ep_j.snds * 0.5 * dt + sj);
+		PS::F64 dvdsR = ep_R.gradvel_x * eij + ep_R.gradvel_y * eij
+				+ ep_R.gradvel_z * eij;
+		PS::F64 dvdsL = ep_L.gradvel_x * eij + ep_L.gradvel_y * eij
+				+ ep_L.gradvel_z * eij;
+		PS::F64 ddensi = drdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 dpresi = dpdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 dveli = dvdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 ddensj = drdsL * (ss - ep_L.snds * 0.5 * dt + sj);
+		PS::F64 dpresj = dpdsL * (ss - ep_L.snds * 0.5 * dt + sj);
+		PS::F64 dvelj = dvdsL * (ss - ep_L.snds * 0.5 * dt + sj);
 
-		rho1 = ep_i.dens + ddensi;
-		p1 = ep_i.pres + dpresi;
-		v1 = vi + dveli;
-		rho2 = ep_j.dens + ddensj;
-		p2 = ep_j.pres + dpresj;
-		v2 = vj + dvelj;
-		if (rho1 < 0.0 || p1 < 0.0 || rho2 < 0.0 || p2 < 0.0) {
-			rho1 = 0.0;
-			p1 = 0.0;
-			v1 = 0.0;
-			rho2 = 0.0;
-			p2 = 0.0;
-			v2 = 0.0;
-		}
-		//
-		PS::F64 ppre, p, v;
+		PS::F64 _rhoR = ep_R.dens + ddensi;
+		PS::F64 _pR = ep_R.pres + dpresi;
+		PS::F64 _vR = vR + dveli;
+		PS::F64 _rhoL = ep_L.dens + ddensj;
+		PS::F64 _pL = ep_L.pres + dpresj;
+		PS::F64 _vL = vL + dvelj;
+
 		PS::F64 W1, W2;
 		const PS::F64 alpha = (2.0 * PARAM::GAMMA) / (PARAM::GAMMA - 1.0);
-		p = .5 * (p1 + p2);
+		double critif = 1.0;
+		double pRs = _pR;
+		+.5 * eij * ep_R.grav * sqrt(PARAM::GAMMA * _pR * _rhoR) * dt;
+		double pLs = _pL;
+		-.5 * eij * ep_L.grav * sqrt(PARAM::GAMMA * _pL * _rhoL) * dt;
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
+
+		PS::F64 p = .5 * (pRs + pLs);
 		pstar = p;
-		vstar = .5 * (v1 + v2);
-		double critif = 1.0 - 1.0e-6;
+		PS::F64 ppre = p;
+		vstar = .5 * (_vR + _vL);
+		for (PS::U32 loop = 0; loop < 10; loop++) {
+			ppre = p;
+			if ((fabs(p / pRs) + 1.0e-9 < critif)) {
+				W1 = sqrt(pRs * _rhoR)
+						* ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA)))
+						* (1.0 - p / pRs) / (1.0 - pow(p / pRs, 1.0 / alpha));
+			} else {
+				W1 = sqrt(pRs * _rhoR)
+						* sqrt(
+								0.5 * (PARAM::GAMMA + 1.0) * p / (pRs)
+										+ 0.5 * (PARAM::GAMMA - 1.0));
+			}
+			if ((fabs(p / pLs) + 1.0e-9 < critif)) {
+				W2 = sqrt(pLs * _rhoL)
+						* ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA)))
+						* (1.0 - p / pLs) / (1.0 - pow(p / pLs, 1.0 / alpha));
+			} else {
+				W2 = sqrt(pLs * _rhoL)
+						* sqrt(
+								0.5 * (PARAM::GAMMA + 1.0) * p / (pLs)
+										+ 0.5 * (PARAM::GAMMA - 1.0));
+			}
+			p = ((pLs / W2 + pRs / W1) + _vL - _vR) / (1.0 / W2 + 1.0 / W1);
+			if (p < 0.0) {
+				p = 0.5 * ppre;
+				break;
+			} else if (1.e-12 + fabs(1.0 - p / ppre) < 1.e-3) {
+				break;
+			}
+		}
+		pstar = p;
+		vstar = .5 * (vR + vL + dveli + dvelj);
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
 
-		double p1s = p1 - .5 * eij * ep_i.grav * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-		double p2s = p2 + .5 * eij * ep_j.grav * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
+		if (3.0 * fabs(vL - vR)
+				> ((ep_R.snds < ep_L.snds) ? ep_R.snds : ep_L.snds)) {
 
-		if (p1 <= 1.0e-6 && p2 <= 1.0e-6) {
-			pstar = 0.0;
-			vstar = 0.0;
+			PS::F64 _rhoR = ep_R.dens;
+			PS::F64 _pR = ep_R.pres;
+			PS::F64 _vR = vR;
+			PS::F64 _rhoL = ep_L.dens;
+			PS::F64 _pL = ep_L.pres;
+			PS::F64 _vL = vL;
 
-		} else {
-			for (PS::U32 loop = 0; loop < 40; loop++) {
+			PS::F64 W1, W2;
+			const PS::F64 alpha = (2.0 * PARAM::GAMMA) / (PARAM::GAMMA - 1.0);
+
+			double critif = 1.0;
+			double pRs = _pR;
+			+.5 * eij * ep_R.grav * sqrt(PARAM::GAMMA * _pR * _rhoR) * dt;
+			double pLs = _pL;
+			-.5 * eij * ep_L.grav * sqrt(PARAM::GAMMA * _pL * _rhoL) * dt;
+
+			PS::F64 p = .5 * (pRs + pLs);
+			pstar = p;
+			PS::F64 ppre = p;
+			vstar = .5 * (_vR + _vL);
+			for (PS::U32 loop = 0; loop < 10; loop++) {
 				ppre = p;
-				if ((p / p1 < critif)) {
-					W1 = sqrt(p1 * rho1) * ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA))) * (1.0 - p / p1) / (1.0 - pow(p / p1, 1.0 / alpha));
+				if ((fabs(p / pRs) + 1.0e-9 < critif)) {
+					W1 =
+							sqrt(pRs * _rhoR)
+									* ((PARAM::GAMMA - 1.0)
+											/ (2.0 * sqrt(PARAM::GAMMA)))
+									* (1.0 - p / pRs)
+									/ (1.0 - pow(p / pRs, 1.0 / alpha));
 				} else {
-					W1 = sqrt(p1 * rho1) * sqrt(0.5 * (PARAM::GAMMA + 1.0) * p / (p1s) + 0.5 * (PARAM::GAMMA - 1.0));
+					W1 = sqrt(pRs * _rhoR)
+							* sqrt(
+									0.5 * (PARAM::GAMMA + 1.0) * p / (pRs)
+											+ 0.5 * (PARAM::GAMMA - 1.0));
 				}
-				if ((p / p2 < critif)) {
-					W2 = sqrt(p2 * rho2) * ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA))) * (1.0 - p / p2) / (1.0 - pow(p / p2, 1.0 / alpha));
+				if ((fabs(p / pLs) + 1.0e-9 < critif)) {
+					W2 =
+							sqrt(pLs * _rhoL)
+									* ((PARAM::GAMMA - 1.0)
+											/ (2.0 * sqrt(PARAM::GAMMA)))
+									* (1.0 - p / pLs)
+									/ (1.0 - pow(p / pLs, 1.0 / alpha));
 				} else {
-					W2 = sqrt(p2 * rho2) * sqrt(0.5 * (PARAM::GAMMA + 1.0) * p / (p2s) + 0.5 * (PARAM::GAMMA - 1.0));
+					W2 = sqrt(pLs * _rhoL)
+							* sqrt(
+									0.5 * (PARAM::GAMMA + 1.0) * p / (pLs)
+											+ 0.5 * (PARAM::GAMMA - 1.0));
 				}
-				p = ((p2s / W2 + p1s / W1) + v2 - v1) / (1.0 / W2 + 1.0 / W1);
+				p = ((pLs / W2 + pRs / W1) + _vL - _vR) / (1.0 / W2 + 1.0 / W1);
 				if (p < 0.0) {
 					p = 0.5 * ppre;
 					break;
-				}
-				if (fabs(1.0 - p / ppre) < 1e-3)
+				} else if (1.e-12 + fabs(1.0 - p / ppre) < 1.e-3) {
 					break;
+				}
 			}
-			vstar = ((W1 * v1 + W2 * v2) + p2s - p1s) / (W1 + W2);
+			vstar = ((W1 * _vR + W2 * _vL) + pLs - pRs) / (W1 + W2);
 			pstar = p;
 			if ((pstar != pstar) || vstar != vstar || pstar <= 0.0) {
-				vstar = .5 * (v1 + v2);
-				pstar = .5 * (p1 + p2);
-				//						std::cout <<p1<<"=="<<p2<<"=="<<pstar<<std::endl;
+				vstar = .5 * (vR + vL);
+				pstar = .5 * (_pR + _pL);
+				std::cout << _pR << "/// " << _pL << "/// " << pRs << "/// "
+						<< "/// " << pLs << "/// " << W1 << "/// " << W2
+						<< std::endl;
 			}
 		}
+
 	}
 	double getPhi(double x) {
 		double a = 9.999995857999977E-01;
@@ -197,7 +284,9 @@ public:
 		double g = -1.389661348847463E-03;
 		double h = 2.648078982351008E-04;
 		double i = -1.692465157938468E-05;
-		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3)
+				+ e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7)
+				+ i * pow(x, 8);
 
 		return phi;
 
@@ -212,12 +301,16 @@ public:
 		double g = 1.867615193618750E-03;
 		double h = -1.388085203319444E-04;
 		double i = 2.998565502661576E-07;
-		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3)
+				+ e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7)
+				+ i * pow(x, 8);
 
 		return phi;
 
 	}
-	void operator ()(const EPI::Hydro* const ep_i, const PS::S32 Nip, const EPJ::Hydro* const ep_j, const PS::S32 Njp, RESULT::Hydro* const hydro) {
+	void operator ()(const EPI::Hydro* const ep_i, const PS::S32 Nip,
+			const EPJ::Hydro* const ep_j, const PS::S32 Njp,
+			RESULT::Hydro* const hydro) {
 
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			hydro[i].clear();
@@ -241,12 +334,17 @@ public:
 
 				const PS::F64 s_ij = dr_norm;
 				const PS::F64 hbar_ij = .5 * (ith.smth + jth.smth);
-				const PS::F64 F_ij = (kernel.gradW_scoord(s_ij, hbar_ij) / (ith.dens * ith.dens) + kernel.gradW_scoord(s_ij, hbar_ij) / (jth.dens * jth.dens));
+				const PS::F64 F_ij = (kernel.gradW_scoord(s_ij, hbar_ij)
+						/ (ith.dens * ith.dens)
+						+ kernel.gradW_scoord(s_ij, hbar_ij)
+								/ (jth.dens * jth.dens));
 
 				const PS::F64vec gradW_hi = kernel.gradW(dr, ith.smth);
-				const PS::F64vec gradW_hj = kernel.gradW(dr, sqrt(2.0) * jth.smth);
+				const PS::F64vec gradW_hj = kernel.gradW(dr,
+						sqrt(2.0) * jth.smth);
 
-				calc_riemann_solver(ith, jth, sstar, delta, ndir, ith.dt, PSTAR, VSTAR);
+				calc_riemann_solver(ith, jth, sstar, delta, ndir, ith.dt, PSTAR,
+						VSTAR);
 				const PS::F64vec fac_acc = -PSTAR * F_ij * ndir;
 //				const PS::F64 fac_eng_dot = -PSTAR * (VSTAR - ith.vel_half * ndir) * F_ij;
 				PS::F64 velref = 0.0;
@@ -269,7 +367,7 @@ public:
 			double current_phi_dash = getPhi_dash(_r);
 			PS::F64vec acc_factor = ep_i[i].pos / _r;
 
-			hydro[i].acc +=  current_phi_dash * acc_factor;
+			hydro[i].acc += current_phi_dash * acc_factor;
 //			PS::F64vec bh_loc(0, 0, 0);
 //
 //			const PS::F64 _r2 = (ep_i[i].pos - bh_loc) * (ep_i[i].pos - bh_loc);
@@ -287,7 +385,8 @@ public:
 //			PS::F64vec BHGrav = (ep_i[i].pos - bh_loc) * formfac * PARAM::G * PARAM::sM_BH / (_r3);
 //			hydro[i].extF = -BHGrav;
 			hydro[i].dt = 0.1 * ith.smth / ith.snds;
-			hydro[i].dt = fmin(hydro[i].dt, 0.02 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
+			hydro[i].dt = fmin(hydro[i].dt,
+					0.02 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
 //			hydro[i].dt = fmin(hydro[i].dt, 0.02 * sqrt(ith.smth / sqrt(BHGrav * BHGrav)));
 
 		}
@@ -298,7 +397,9 @@ public:
 
 template<class TParticleJ> class CalcGravityForce {
 public:
-	void operator ()(const EPI::Grav* const ep_i, const PS::S32 Nip, const TParticleJ* const ep_j, const PS::S32 Njp, RESULT::Grav* const grav) {
+	void operator ()(const EPI::Grav* const ep_i, const PS::S32 Nip,
+			const TParticleJ* const ep_j, const PS::S32 Njp,
+			RESULT::Grav* const grav) {
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			const EPI::Grav& ith = ep_i[i];
 			for (PS::S32 j = 0; j < Njp; ++j) {
@@ -322,7 +423,8 @@ public:
 
 						PS::F64 formfac = 0.0;
 
-						formfac = erf(xtilde) - exp(-xtilde2) * xtilde * 2 / sqrt(M_PI);
+						formfac = erf(xtilde)
+								- exp(-xtilde2) * xtilde * 2 / sqrt(M_PI);
 						grav[i].acc += -PARAM::G * m_dr3_inv * dr * formfac;
 					} else if (typeid(TParticleJ) == typeid(PS::SPJMonopole)) {
 						//				std::cout<<"in"<<std::endl;
@@ -336,4 +438,5 @@ public:
 		}
 	}
 };
+
 

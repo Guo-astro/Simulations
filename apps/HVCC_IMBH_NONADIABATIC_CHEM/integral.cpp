@@ -1,5 +1,6 @@
 #include "header.h"
 void evolve_abundance(RealPtcl &hydro, const PS::F64 oneDynTimeStep);
+
 double fitLambda(double T) {
 	double F = 1. / (-3.09e-2 - 3.21e-7 * pow(T, 1.133));
 	double lambda = pow(10, F) * exp(-8000. / T)
@@ -12,7 +13,6 @@ double fitLambda(double T) {
 double fitGamma(double T) {
 	return 1.e-26;
 }
-int reset = 0;
 double fitTEMP(double numdens) {
 	double x = log10(numdens);
 	double fit_T_NUMDENS_a = 3.626416807912980E+00;
@@ -198,6 +198,7 @@ double fitAB_HI(double numdens) {
 			+ fit_AB_E_NUMDENS_u * pow(x, 20);
 	return pow(10.0, AB_H2_DENS);
 }
+int reset = 0;
 PS::F64 getTimeStepGlobal(PS::ParticleSystem<RealPtcl>& sph_system,
 		PS::F64 &time) {
 	PS::F64 dt = 1.0e+30; //set VERY LARGE VALUE
@@ -206,13 +207,8 @@ PS::F64 getTimeStepGlobal(PS::ParticleSystem<RealPtcl>& sph_system,
 		const RealPtcl& ith = sph_system[i];
 
 		dt = fmin(0.3 * ith.smth / (ith.snds),
-				0.06 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
-		dt = fmin(dt, 0.06 * sqrt(ith.smth / sqrt(ith.extF * ith.extF)));
-		if (time > 1.5) {
-			dt = fmin(0.05 * ith.smth / (ith.snds),
-					0.02 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
-			dt = fmin(dt, sph_system[i].dt);
-		}
+				0.04 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
+		dt = fmin(dt, 0.04 * sqrt(ith.smth / sqrt(ith.extF * ith.extF)));
 		sph_system[i].old_time = time;
 	}
 	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
@@ -220,53 +216,6 @@ PS::F64 getTimeStepGlobal(PS::ParticleSystem<RealPtcl>& sph_system,
 
 		double etmp1 = sph_system[i].eng + dt * sph_system[i].eng_dot;
 		int count = 0;
-		if (etmp1 < 0.0) {
-
-			time = sph_system[i].old_time;
-			sph_system[i].eng = sph_system[i].old_eng;
-			sph_system[i].pos = sph_system[i].old_pos;
-			sph_system[i].vel = sph_system[i].old_vel;
-			sph_system[i].smth = sph_system[i].old_smth;
-			sph_system[i].abundances[0] = sph_system[i].old_abundances[0];
-			sph_system[i].abundances[1] = sph_system[i].old_abundances[1];
-			sph_system[i].abundances[2] = sph_system[i].old_abundances[2];
-			sph_system[i].abundances[3] = sph_system[i].old_abundances[3];
-			sph_system[i].abundances[4] = sph_system[i].old_abundances[4];
-			sph_system[i].abundances[5] = sph_system[i].old_abundances[5];
-			sph_system[i].abundances[6] = sph_system[i].old_abundances[6];
-			sph_system[i].abundances[7] = sph_system[i].old_abundances[7];
-			sph_system[i].abundances[8] = sph_system[i].old_abundances[8];
-			sph_system[i].abundances[9] = sph_system[i].old_abundances[9];
-			sph_system[i].abundances[10] = sph_system[i].old_abundances[10];
-
-			std::cout << sph_system[i].eng << " " << sph_system[i].eng_dot
-					<< "in getTimeStepGlobal " << std::endl;
-
-
-			dt = 0.4
-					* fmin(dt, fabs(sph_system[i].eng / sph_system[i].eng_dot));
-            if(dt<1.e-5){
-            	const PS::S32 ind[1] = { i };
-            			sph_system.removeParticle(ind, 1);
-            }
-//			double NUMDENS_CGS = sph_system[i].dens * PARAM::SMassDens
-//					/ (2.34 * PARAM::PROTONMASS);
-//			double T = 0.0;
-//			T = 10;
-//
-////			double abundance_e = fitAB_E(NUMDENS_CGS);
-////			double abundance_H2 = 0.90;
-////			double abundance_CO = fitAB_CO(NUMDENS_CGS);
-////			double abundance_HI = fitAB_HI(NUMDENS_CGS);
-//
-//			double energy = T * (PARAM::KBOLTZ_CGS * .5)
-//					/ (2.34 * PARAM::PROTONMASS_CGS * (5. / 3. - 1.0));
-
-//			sph_system[i].eng = energy / PARAM::SEng_per_Mass;
-
-			count++;
-
-		}
 		sph_system[i].eng_timescale = fabs(ith.eng / ith.eng_dot);
 		double NUMDENS_CGS = sph_system[i].dens * PARAM::SMassDens
 				/ (2.34 * PARAM::PROTONMASS);
@@ -280,15 +229,88 @@ PS::F64 getTimeStepGlobal(PS::ParticleSystem<RealPtcl>& sph_system,
 		const PS::F64 radial_mag = sqrt(sph_system[i].pos * sph_system[i].pos);
 		const PS::F64vec radial = sph_system[i].pos / radial_mag;
 		const PS::F64 radialForce_extF_mag = sph_system[i].extF * radial;
-		if (NUMDENS_CGS > 3.e10 || fabs(radialForce_extF_mag) > 18000) {
+		const PS::F64 radialForce_sg_mag = sph_system[i].grav * radial;
+
+		if (sph_system[i].dens > 1000 || fabs(radialForce_extF_mag) > 18000) {
 			const PS::S32 ind[1] = { i };
 			sph_system.removeParticle(ind, 1);
-			std::cout << NUMDENS_CGS << " " << etmp1 << " "
-					<< radialForce_extF_mag
-					<< "too large density or near black hole" << radial_mag
+			std::cout << "==density very large: " << sph_system[i].smth
+					<< "eng: " << sph_system[i].eng << "dens: "
+					<< sph_system[i].dens << "NUMDENS_CGS: " << NUMDENS_CGS
+					<< "pos: " << sph_system[i].pos << "extF_proj "
+					<< radialForce_extF_mag << "sg_proj " << radialForce_sg_mag
 					<< std::endl;
+			reset = 1;
+//			double T = 0.0;
+//			T = 100;
+//
+			double abundance_e = 0.1;
+			double abundance_H2 = 0.45;
+			double abundance_HI = 0.1;
+			sph_system[i].abundances[0] = abundance_e;
+			sph_system[i].abundances[1] = abundance_HI;
+			sph_system[i].abundances[5] = abundance_H2;
+			sph_system[i].abundances[6] = 3.e-4;
+//
+//			abundance_HI = abundance_HI / (abundance_HI + 2. * abundance_H2);
+//			abundance_H2 = abundance_H2 / (abundance_HI + 2. * abundance_H2);
+//			double energy = T
+//					* (PARAM::KBOLTZ_CGS * (1.1 + abundance_e - abundance_H2))
+//					/ (2.34 * PARAM::PROTONMASS_CGS * (PARAM::GAMMA - 1.0));
+//
+//			sph_system[i].eng = energy / PARAM::SEng_per_Mass;
+//			reset = 1;
 
 		}
+
+		if (etmp1 < 0.0 && reset == 0) {
+			reset = 1;
+			std::cout << "==etmp<0.0 smth: " << sph_system[i].smth << "eng: "
+					<< sph_system[i].eng << "dens: " << sph_system[i].dens
+					<< "NUMDENS_CGS: " << NUMDENS_CGS << "pos: "
+					<< sph_system[i].pos << "extF_proj " << radialForce_extF_mag
+					<< "sg_proj " << radialForce_sg_mag << std::endl;
+
+			double NUMDENS_CGS = sph_system[i].dens * PARAM::SMassDens
+					/ (2.34 * PARAM::PROTONMASS);
+			double T = 0.0;
+			T = fitTEMP(NUMDENS_CGS);
+			double abundance_e = fitAB_E(NUMDENS_CGS);
+			double abundance_H2 = fitAB_H2(NUMDENS_CGS);
+			double abundance_CO = fitAB_CO(NUMDENS_CGS);
+			double abundance_HI = fitAB_HI(NUMDENS_CGS);
+
+			abundance_HI = abundance_HI / (abundance_HI + 2. * abundance_H2);
+			abundance_H2 = abundance_H2 / (abundance_HI + 2. * abundance_H2);
+			double energy = T
+					* (PARAM::KBOLTZ_CGS * (1.1 + abundance_e - abundance_H2))
+					/ (2.34 * PARAM::PROTONMASS_CGS * (PARAM::GAMMA - 1.0));
+
+			sph_system[i].eng = energy / PARAM::SEng_per_Mass;
+			dt = 0.4
+					* fmin(dt, fabs(sph_system[i].eng / sph_system[i].eng_dot));
+			if (dt < 1.e-6) {
+				const PS::S32 ind[1] = { i };
+				sph_system.removeParticle(ind, 1);
+
+				std::cout << "==dt<1e-6 smth: " << sph_system[i].smth << "eng: "
+						<< sph_system[i].eng << "dens: " << sph_system[i].dens
+						<< "NUMDENS_CGS: " << NUMDENS_CGS << "pos: "
+						<< sph_system[i].pos << "extF_proj "
+						<< radialForce_extF_mag << "sg_proj "
+						<< radialForce_sg_mag << std::endl;
+
+			}
+			count++;
+
+		}
+		//	if (dt < 1.e-5) {
+		//		const PS::S32 ind[1] = { i };
+		//		sph_system.removeParticle(ind, 1);
+		//		std::cout << sph_system[i].eng << " " << sph_system[i].eng_dot
+		//				<< "removing... " << sph_system[i].dens << "---"
+		//				<< sph_system[i].pos << std::endl;
+		//	}
 
 	}
 	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
@@ -343,107 +365,121 @@ void Predict(PS::ParticleSystem<RealPtcl>& sph_system, const PS::F64 dt) {
 
 void FinalKick(PS::ParticleSystem<RealPtcl>& sph_system, const PS::F64 dt,
 		const PS::F64 time) {
-//	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
-//
-//		sph_system[i].vel = sph_system[i].vel_half + 0.5 * dt * (sph_system[i].acc + sph_system[i].grav + sph_system[i].extF);
-//		sph_system[i].eng = sph_system[i].eng_half + 0.5 * dt * sph_system[i].eng_dot;
-//		if (sph_system[i].eng < 0.0) {
-//			sph_system[i].eng = 1e-4;
-//		}
-//
-////		sph_system[i].BoverDens = sph_system[i].BoverDens_half + 0.5 * dt * sph_system[i].BoverDens_dot;
-////		sph_system[i].MagneticB = sph_system[i].BoverDens * sph_system[i].dens;
-////		sph_system[i].MagneticB.z = 0.0;
-//	}
-
 #pragma omp parallel for
 	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
 
 		sph_system[i].vel_half = sph_system[i].vel
-				+ 0.5 * dt
-						* (sph_system[i].acc + sph_system[i].grav
-								+ sph_system[i].extF);
-//
-
+				+ 0.5 * dt * (sph_system[i].acc + sph_system[i].grav);
 		sph_system[i].vel = sph_system[i].vel_half
-				+ 0.5 * dt
-						* (sph_system[i].acc + sph_system[i].grav
-								+ sph_system[i].extF);
-//			sph_system[i].eng = sph_system[i].eng_half
-//					+ 0.5 * dt * sph_system[i].eng_dot
-//					;
+				+ 0.5 * dt * (sph_system[i].acc + sph_system[i].grav);
 		sph_system[i].pos += sph_system[i].vel * dt;
 		sph_system[i].eng += dt * sph_system[i].eng_dot;
-		double NUMDENS_CGS = sph_system[i].dens * PARAM::SMassDens
-				/ (2.34 * PARAM::PROTONMASS);
-		if (sph_system[i].eng < 0.0) {
-//			const PS::S32 ind[1] = { i };
-//			sph_system.removeParticle(ind, 1);
 
-			std::cout << sph_system[i].eng << " " << sph_system[i].eng_dot
-					<< "in intgralll " << std::endl;
-
-			sph_system[i].eng = sph_system[i].old_eng;
-			sph_system[i].pos = sph_system[i].old_pos;
-			sph_system[i].vel = sph_system[i].old_vel;
-			sph_system[i].smth = sph_system[i].old_smth;
-			sph_system[i].abundances[0] = sph_system[i].old_abundances[0];
-			sph_system[i].abundances[1] = sph_system[i].old_abundances[1];
-			sph_system[i].abundances[2] = sph_system[i].old_abundances[2];
-			sph_system[i].abundances[3] = sph_system[i].old_abundances[3];
-			sph_system[i].abundances[4] = sph_system[i].old_abundances[4];
-			sph_system[i].abundances[5] = sph_system[i].old_abundances[5];
-			sph_system[i].abundances[6] = sph_system[i].old_abundances[6];
-			sph_system[i].abundances[7] = sph_system[i].old_abundances[7];
-			sph_system[i].abundances[8] = sph_system[i].old_abundances[8];
-			sph_system[i].abundances[9] = sph_system[i].old_abundances[9];
-			sph_system[i].abundances[10] = sph_system[i].old_abundances[10];
-
-		} else {
-
-			if (time < 1.5) {
-//			std::cout << sph_system[i].eng << "in integral.cpp " << std::endl;
-
-				double T = 0.0;
-				T = fitTEMP(NUMDENS_CGS);
-
-				double abundance_e = fitAB_E(NUMDENS_CGS);
-				double abundance_H2 = fitAB_H2(NUMDENS_CGS);
-				double abundance_CO = fitAB_CO(NUMDENS_CGS);
-				double abundance_HI = fitAB_HI(NUMDENS_CGS);
-
-				double energy = T
-						* (PARAM::KBOLTZ_CGS
-								* (1.1 + abundance_e - abundance_H2))
-						/ (2.34 * PARAM::PROTONMASS_CGS * (5. / 3. - 1.0));
-
-				sph_system[i].eng = energy / PARAM::SEng_per_Mass;
-
-				sph_system[i].old_abundances[0] = abundance_e;
-				sph_system[i].old_abundances[1] = abundance_HI;
-				sph_system[i].old_abundances[5] = abundance_H2;
-				sph_system[i].old_abundances[6] = abundance_CO;
-				sph_system[i].abundances[0] = abundance_e;
-				sph_system[i].abundances[1] = abundance_HI;
-				sph_system[i].abundances[5] = abundance_H2;
-				sph_system[i].abundances[6] = abundance_CO;
-
-			} else {
-				evolve_abundance(sph_system[i], dt);
-
-				sph_system[i].cooling_timescale = ((sph_system[i].eng
-						* PARAM::SEng_per_Mass
-						/ fabs(sph_system[i].Lambda / 1.e26))
-						* sph_system[i].dens * PARAM::SMassDens) / PARAM::yr;
-			}
-
-		}
-		sph_system[i].old_eng = sph_system[i].eng;
-		sph_system[i].old_pos = sph_system[i].pos;
-		sph_system[i].old_vel = sph_system[i].vel;
-		sph_system[i].old_smth = sph_system[i].smth;
-
+//		sph_system[i].BoverDens = sph_system[i].BoverDens_half + 0.5 * dt * sph_system[i].BoverDens_dot;
+//		sph_system[i].MagneticB = sph_system[i].BoverDens * sph_system[i].dens;
+//		sph_system[i].MagneticB.z = 0.0;
 	}
+
+//#pragma omp parallel for
+//	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
+//
+//		double NUMDENS_CGS = sph_system[i].dens * PARAM::SMassDens
+//				/ (2.34 * PARAM::PROTONMASS);
+//		if (reset == 1) {
+//			const PS::F64 radial_mag = sqrt(
+//					sph_system[i].pos * sph_system[i].pos);
+//
+//			const PS::F64vec radial = sph_system[i].pos / radial_mag;
+//
+//			const PS::F64 radialForce_extF_mag = sph_system[i].extF * radial;
+//			const PS::F64 radialForce_sg_mag = sph_system[i].grav * radial;
+//			std::cout << "==fitting formula smth or T=10 for large density: "
+//					<< sph_system[i].smth << "eng: " << sph_system[i].eng
+//					<< "dens: " << sph_system[i].dens << "NUMDENS_CGS: "
+//					<< NUMDENS_CGS << "pos: " << sph_system[i].pos
+//					<< "extF_proj " << radialForce_extF_mag << "sg_proj "
+//					<< radialForce_sg_mag << std::endl;
+//
+//			sph_system[i].vel_half = sph_system[i].vel
+//					+ 0.5 * dt
+//							* (sph_system[i].acc + sph_system[i].grav
+//									+ sph_system[i].extF);
+//
+//			sph_system[i].vel = sph_system[i].vel_half
+//					+ 0.5 * dt
+//							* (sph_system[i].acc + sph_system[i].grav
+//									+ sph_system[i].extF);
+//			sph_system[i].pos += sph_system[i].vel * dt;
+//			reset = 0;
+//		} else {
+//
+//			if (time < 1.0) {
+//
+//				double T = 0.0;
+//				T = fitTEMP(NUMDENS_CGS);
+//
+//				double abundance_e = fitAB_E(NUMDENS_CGS);
+//				double abundance_H2 = fitAB_H2(NUMDENS_CGS);
+//				double abundance_CO = fitAB_CO(NUMDENS_CGS);
+//				double abundance_HI = fitAB_HI(NUMDENS_CGS);
+//
+//				double energy = T
+//						* (PARAM::KBOLTZ_CGS
+//								* (1.1 + abundance_e - abundance_H2))
+//						/ (2.34 * PARAM::PROTONMASS_CGS * (PARAM::GAMMA - 1.0));
+//				if (energy != energy) {
+//					std::cout << T << "¥¥¥1 " << NUMDENS_CGS << "¥¥¥¥2 "
+//							<< abundance_e << "¥¥¥¥H2 " << abundance_H2
+//							<< "abundance_CO" << abundance_CO << std::endl;
+//
+//				}
+//				sph_system[i].eng = energy / PARAM::SEng_per_Mass;
+//
+//				sph_system[i].old_abundances[0] = abundance_e;
+//				sph_system[i].old_abundances[1] = abundance_HI;
+//				sph_system[i].old_abundances[5] = abundance_H2;
+//				sph_system[i].old_abundances[6] = abundance_CO;
+//				sph_system[i].abundances[0] = abundance_e;
+//				sph_system[i].abundances[1] = abundance_HI;
+//				sph_system[i].abundances[5] = abundance_H2;
+//				sph_system[i].abundances[6] = abundance_CO;
+//
+//				sph_system[i].vel_half = sph_system[i].vel
+//						+ 0.5 * dt
+//								* (sph_system[i].acc + sph_system[i].grav
+//										+ sph_system[i].extF);
+//				sph_system[i].vel = sph_system[i].vel_half
+//						+ 0.5 * dt
+//								* (sph_system[i].acc + sph_system[i].grav
+//										+ sph_system[i].extF);
+//				sph_system[i].pos += sph_system[i].vel * dt;
+//
+//			} else {
+//				sph_system[i].vel_half = sph_system[i].vel
+//						+ 0.5 * dt
+//								* (sph_system[i].acc + sph_system[i].grav
+//										+ sph_system[i].extF);
+//				sph_system[i].vel = sph_system[i].vel_half
+//						+ 0.5 * dt
+//								* (sph_system[i].acc + sph_system[i].grav
+//										+ sph_system[i].extF);
+//				sph_system[i].pos += sph_system[i].vel * dt;
+//				sph_system[i].eng += dt * sph_system[i].eng_dot;
+//				evolve_abundance(sph_system[i], dt);
+//
+//				sph_system[i].cooling_timescale = ((sph_system[i].eng
+//						* PARAM::SEng_per_Mass
+//						/ fabs(sph_system[i].Lambda / 1.e26))
+//						* sph_system[i].dens * PARAM::SMassDens) / PARAM::yr;
+//			}
+//
+//		}
+//		sph_system[i].old_eng = sph_system[i].eng;
+//		sph_system[i].old_pos = sph_system[i].pos;
+//		sph_system[i].old_vel = sph_system[i].vel;
+//		sph_system[i].old_smth = sph_system[i].smth;
+//
+//	}
 }
 
 PS::F64 RATE_XR_HII_HeII(PS::F64 T, PS::F64 abundance_e, PS::F64 abundance_HI,
@@ -2055,7 +2091,7 @@ void evolve_abundance(RealPtcl &hydro, const PS::F64 oneDynTimeStep) {
 			abundance_CII = fmax(abundance_CI - abundance_CO, 0.0);
 			abundance_e = fmin(abundance_HII + abundance_CII + abundance_SiII,
 					1.0);
-			GAMMA_GAS = 5. / 3.;
+			GAMMA_GAS = PARAM::GAMMA;
 			Gamma = rate_Gamma(T, NUMDENS_CGS, abundance_HI, abundance_e,
 					abundance_H2, abundance_HII, abundance_CII,
 					dust_to_gas_ratio, PARAM::Grain_T, PARAM::col_dens_H2,
@@ -2063,8 +2099,9 @@ void evolve_abundance(RealPtcl &hydro, const PS::F64 oneDynTimeStep) {
 			Lambda = rate_Lambda(T, NUMDENS_CGS, abundance_HI, abundance_e,
 					abundance_H2, abundance_HII, abundance_CII, abundance_FeII,
 					abundance_SiII, abundance_CI, abundance_OI, abundance_CO,
-					dust_to_gas_ratio, 8, 100);
-
+					dust_to_gas_ratio, PARAM::Grain_T, PARAM::grain_size);
+//			double beta= T>3e4?-0.65:4.0;
+//			Lambda = 1.4e-22*NUMDENS_CGS*NUMDENS_CGS*pow(T/(3.e4),beta);
 			rel_diff_eng = (fabs(Gamma - Lambda) * dt)
 					/ (energy * MASSDENS_CGS);
 

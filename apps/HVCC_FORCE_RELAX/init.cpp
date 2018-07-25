@@ -127,18 +127,18 @@ void SetupIC_Restart_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph
 			"CO_0.2_0.4_mass/ascii/HVCC_imp_7.00/HVCC_0313.txt", header);
 
 #else
-	sph_system.readParticleBinary("result/-001.dat", header);
-//	sph_system.readParticleAscii("result/19000.dat", header);
+	sph_system.readParticleAscii("result/poly_force_relaxed7000.dat", header);
 	PS::U32 ptcl_size = sph_system.getNumberOfParticleGlobal();
 	std::cout << "setup...ptcl num " << std::endl;
 //Reset Energy
 	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
 
 		sph_system[i].smth = pow(sph_system[i].mass / sph_system[i].dens, 1.0 / (PS::F64) (PARAM::Dim));
-//		std::cout << "dens " << pow(sph_system[i].mass / sph_system[i].dens, 1. / 3.) << " " << sph_system[i].smth << std::endl;
+		std::cout << "dens " << pow(sph_system[i].mass / sph_system[i].dens, 1. / 3.) << " " << sph_system[i].smth << std::endl;
 
 	}
 
 #endif
 
 }
+

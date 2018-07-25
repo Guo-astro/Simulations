@@ -532,12 +532,12 @@ public:
 #endif
 
 	void setPressure() {
-		double GAMMA = 5.
-				* (1.1 * this->abundances[1] + this->abundances[0]
-						+ this->abundances[5])
-				/ (3.
-						* (1.1 * this->abundances[1] + this->abundances[0]
-								+ this->abundances[5]));
+//		double GAMMA = 5.
+//				* (1.1 * this->abundances[1] + this->abundances[0]
+//						+ this->abundances[5])
+//				/ (3.
+//						* (1.1 * this->abundances[1] + this->abundances[0]
+//								+ this->abundances[5]));
 
 //		if (eng < 0.0 || pres < 0.0) {
 //			std::cout << pres << "in class.h " << eng << " " << dens << std::endl;
@@ -550,7 +550,8 @@ public:
 //			eng = energy / PARAM::SEng_per_Mass;
 //
 //		}
-		 GAMMA =5./3.;
+		//TODO change this to real
+		double GAMMA =5./3.;
 		pres = (PARAM::GAMMA - 1) * dens * eng;
 
 //		pres = .4 * pow(dens, PARAM::GAMMA);

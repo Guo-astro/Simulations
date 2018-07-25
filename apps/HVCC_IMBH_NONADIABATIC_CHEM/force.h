@@ -21,7 +21,6 @@ public:
 			}
 			dens[i].smth = PARAM::SMTH
 					* pow(ith.mass / tmp_dens, 1.0 / (PS::F64)(PARAM::Dim));
-			hmin = fmin(hmin, dens[i].smth);
 
 		}
 
@@ -59,14 +58,6 @@ public:
 
 		}
 	}
-};
-struct interP {
-	PS::F64 VIJ_I;
-	PS::F64 VIJ_J;
-	PS::F64 sstar;
-	PS::F64 PSTAR;
-	PS::F64 VSTAR;
-
 };
 
 class CalcHydroForce {
@@ -154,171 +145,158 @@ public:
 		//		Vij2_hj = ((0.234375 * hj2 * Aij * Aij + 0.1875 * (2 * Aij * Cij + Bij * Bij)) * hj2 + 0.25 * (2 * Bij * Dij + Cij * Cij)) * hj2 + Dij * Dij;
 		//		ssP = 0.5 * (((0.46875 * hi2 * Aij * Bij + 0.375 * (Aij * Dij + Bij * Cij)) * hi2 + 0.5 * Cij * Dij) * hi2 / Vij2_hi + ((0.46875 * hj2 * Aij * Bij + 0.375 * (Aij * Dij + Bij * Cij)) * hj2 + 0.5 * Cij * Dij) * hj2 / Vij2_hj);
 	}
-	void calc_riemann_solver(const EPI::Hydro ep_i, const EPJ::Hydro ep_j,
+	void calc_riemann_solver(const EPI::Hydro ep_R, const EPJ::Hydro ep_L,
 			const PS::F64 ss, const PS::F64 delta, const PS::F64vec eij,
-			const PS::F64 dt, PS::F64 &pstar, PS::F64 &vstar) {
-		PS::F64 rho1, rho2, v1, v2, p1, p2;
-		PS::F64 vi = ep_i.vel * eij;
-		PS::F64 vj = ep_j.vel * eij;
-		PS::F64 drdsi, drdsj, dpdsi, dpdsj, dvdsi, dvdsj;
-
+			const PS::F64 dt, PS::F64 &pstar, PS::F64 &vstar,
+			) {
 		PS::F64 si = .5 * delta;
 		PS::F64 sj = .5 * delta;
-		drdsi = ep_i.graddens * eij;
-		drdsj = ep_j.graddens * eij;
-		dpdsi = ep_i.gradpres * eij;
-		dpdsj = ep_j.gradpres * eij;
-		dvdsi = ep_i.gradvel_x * eij * eij.x + ep_i.gradvel_y * eij * eij.y
-				+ ep_i.gradvel_z * eij * eij.z;
-		dvdsj = ep_j.gradvel_x * eij * eij.x + ep_j.gradvel_y * eij * eij.y
-				+ ep_j.gradvel_z * eij * eij.z;
-		if (dvdsi * dvdsj < 0.0 || drdsi * drdsj < 0.0 || dpdsi * dpdsj < 0.0) {
-			dvdsi = 0.0;
-			dvdsj = 0.0;
-		}
-//		if (dvdsi * dvdsj < 0.0) {
-//			dvdsi = dvdsj = 0.0;
-//			drdsi = drdsj = 0.0;
-//			dpdsi = dpdsj = 0.0;
-//		}
-		if (3.0 * fabs(vj - vi)
-				> ((ep_i.snds < ep_j.snds) ? ep_i.snds : ep_j.snds)) {
-			//		//monotonisity constraint
+		PS::F64 drdsR = ep_R.grad_dens * eij;
+		PS::F64 drdsL = ep_L.grad_dens * eij;
+		PS::F64 dpdsR = ep_R.gradP * eij;
+		PS::F64 dpdsL = ep_L.gradP * eij;
+		PS::F64 vR = ep_R.vel * eij;
+		PS::F64 vL = ep_L.vel * eij;
 
-			drdsi = drdsj = 0.0;
-			dpdsi = dpdsj = 0.0;
-			dvdsi = dvdsj = 0.0;
-		}
-		double ddensi = drdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double dpresi = dpdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double dveli = dvdsi * (ss + ep_i.snds * 0.5 * dt - si);
-		double ddensj = drdsj * (ss - ep_j.snds * 0.5 * dt + sj);
-		double dpresj = dpdsj * (ss - ep_j.snds * 0.5 * dt + sj);
-		double dvelj = dvdsj * (ss - ep_j.snds * 0.5 * dt + sj);
+		PS::F64 dvdsR = ep_R.gradvel_x * eij + ep_R.gradvel_y * eij
+				+ ep_R.gradvel_z * eij;
+		PS::F64 dvdsL = ep_L.gradvel_x * eij + ep_L.gradvel_y * eij
+				+ ep_L.gradvel_z * eij;
+		PS::F64 ddensi = drdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 dpresi = dpdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 dveli = dvdsR * (ss + ep_R.snds * 0.5 * dt - si);
+		PS::F64 ddensj = drdsL * (ss - ep_L.snds * 0.5 * dt + sj);
+		PS::F64 dpresj = dpdsL * (ss - ep_L.snds * 0.5 * dt + sj);
+		PS::F64 dvelj = dvdsL * (ss - ep_L.snds * 0.5 * dt + sj);
 
-		 ddensi =  0.0;
-		 dpresi =  0.0;
-		 ddensj =  0.0;
-		 dpresj =  0.0;
-		 dveli =   0.0;
-		 dvelj =   0.0;
+		PS::F64 _rhoR = ep_R.dens + ddensi;
+		PS::F64 _pR = ep_R.pres + dpresi;
+		PS::F64 _vR = vR + dveli;
+		PS::F64 _rhoL = ep_L.dens + ddensj;
+		PS::F64 _pL = ep_L.pres + dpresj;
+		PS::F64 _vL = vL + dvelj;
 
-		rho1 = ep_i.dens + ddensi;
-		p1 = ep_i.pres + dpresi;
-		v1 = vi + dveli;
-		rho2 = ep_j.dens + ddensj;
-		p2 = ep_j.pres + dpresj;
-		v2 = vj + dvelj;
-////				std::cout<<dpresi<<std::endl;
-		if (rho1 < 0.0 || p1 < 0.0 || rho2 < 0.0 || p2 < 0.0) {
-			rho1 = 0.0;
-			p1 = 0.0;
-			v1 = 0.0;
-			rho2 = 0.0;
-			p2 = 0.0;
-			v2 = 0.0;
-		}
-//		rho1 = ep_i.dens+ ddensj;
-//		p1 = ep_i.pres+ dpresj;
-//
-//		v1 = vi + dvelj;
-//		rho2 = ep_j.dens + ddensi;
-//		p2 = ep_j.pres+ dpresi;
-//		v2 = vj+dveli;
-//		if (rho1 < 0.0 || p1 < 0.0 || rho2 < 0.0 || p2 < 0.0) {
-//			rho1 = ep_i.dens;
-//			p1 = ep_i.pres ;
-//			v1 = vi;
-//			rho2 = ep_j.dens;
-//			p2 = ep_j.pres ;
-//			v2 = vj;
-//		}
-//		PS::F64vec dr = ep_i.pos - ep_j.pos;
-//						rho1 = ep_i.dens;
-//						p1 = ep_i.pres-ep_i.grav*eij * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//
-//						v1 = vi;
-//						rho2 = ep_j.dens;
-//						p2 = ep_j.pres  + ep_j.grav*eij * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//						v2 = vj;
-//
-		PS::F64 ppre, p, v;
 		PS::F64 W1, W2;
 		const PS::F64 alpha = (2.0 * PARAM::GAMMA) / (PARAM::GAMMA - 1.0);
-		p = .5 * (p1 + p2);
+		double critif = 1.0;
+		double pRs = _pR;
+		+.5 * eij * ep_R.grav * sqrt(PARAM::GAMMA * _pR * _rhoR) * dt;
+		double pLs = _pL;
+		-.5 * eij * ep_L.grav * sqrt(PARAM::GAMMA * _pL * _rhoL) * dt;
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+		PS::F64 p = .5 * (pRs + pLs);
 		pstar = p;
-		vstar = .5 * (v1 + v2);
-		double critif = 1.0 - 1.0e-6;
-		double p1s = p1
-				- .5 * eij * ep_i.grav * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//				- .5 * eij * ep_i.extF * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-		double p2s = p2
-				+ .5 * eij * ep_j.grav * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//				+ .5 * eij * ep_j.extF * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//		double p1s = p1;
-//		double p2s = p2;
-//		double p1s = p1 - .5 * eij * ep_i.grav * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//		double p2s = p2 + .5 * eij * ep_j.grav * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//p1 -=.5 * eij * ep_i.grav * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//p2+=.5 * eij * ep_j.grav * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//		double p1s = p1
-//				- .5 * ep_i.grav * eij * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//		double p2s = p2
-//				+ .5 * ep_j.grav * eij * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//		double p1s = p1 - ep_i.grav * eij * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//		double p2s = p2 + ep_j.grav * eij * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-//						double p1s = p1 -ep_i.grav*eij *6.0 * sqrt(PARAM::GAMMA * p1 * rho1) * dt;
-//							double p2s = p2 + ep_j.grav*eij * 6.0 * sqrt(PARAM::GAMMA * p2 * rho2) * dt;
-		p1 += 1e-8;
-		p2 += 1e-8;
-		if (p1s <= 0.0 || p2s <= 0.0) {
-			pstar = .5 * (p1 + p2);
-			vstar = .5 * (v1 + v2);
-		} else {
+		PS::F64 ppre = p;
+		vstar = .5 * (_vR + _vL);
+		for (PS::U32 loop = 0; loop < 10; loop++) {
+			ppre = p;
+			if ((fabs(p / pRs) + 1.0e-9 < critif)) {
+				W1 = sqrt(pRs * _rhoR)
+						* ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA)))
+						* (1.0 - p / pRs) / (1.0 - pow(p / pRs, 1.0 / alpha));
+			} else {
+				W1 = sqrt(pRs * _rhoR)
+						* sqrt(
+								0.5 * (PARAM::GAMMA + 1.0) * p / (pRs)
+										+ 0.5 * (PARAM::GAMMA - 1.0));
+			}
+			if ((fabs(p / pLs) + 1.0e-9 < critif)) {
+				W2 = sqrt(pLs * _rhoL)
+						* ((PARAM::GAMMA - 1.0) / (2.0 * sqrt(PARAM::GAMMA)))
+						* (1.0 - p / pLs) / (1.0 - pow(p / pLs, 1.0 / alpha));
+			} else {
+				W2 = sqrt(pLs * _rhoL)
+						* sqrt(
+								0.5 * (PARAM::GAMMA + 1.0) * p / (pLs)
+										+ 0.5 * (PARAM::GAMMA - 1.0));
+			}
+			p = ((pLs / W2 + pRs / W1) + _vL - _vR) / (1.0 / W2 + 1.0 / W1);
+			if (p < 0.0) {
+				p = 0.5 * ppre;
+				break;
+			} else if (1.e-12 + fabs(1.0 - p / ppre) < 1.e-3) {
+				break;
+			}
+		}
+		pstar = p;
+		vstar = .5 * (vR + vL + dveli + dvelj);
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////
+
+		if (3.0 * fabs(vL - vR)
+				> ((ep_R.snds < ep_L.snds) ? ep_R.snds : ep_L.snds)) {
+
+			PS::F64 _rhoR = ep_R.dens;
+			PS::F64 _pR = ep_R.pres;
+			PS::F64 _vR = vR;
+			PS::F64 _rhoL = ep_L.dens;
+			PS::F64 _pL = ep_L.pres;
+			PS::F64 _vL = vL;
+
+			PS::F64 W1, W2;
+			const PS::F64 alpha = (2.0 * PARAM::GAMMA) / (PARAM::GAMMA - 1.0);
+
+			double critif = 1.0;
+			double pRs = _pR;
+			+.5 * eij * ep_R.grav * sqrt(PARAM::GAMMA * _pR * _rhoR) * dt;
+			double pLs = _pL;
+			-.5 * eij * ep_L.grav * sqrt(PARAM::GAMMA * _pL * _rhoL) * dt;
+
+			PS::F64 p = .5 * (pRs + pLs);
+			pstar = p;
+			PS::F64 ppre = p;
+			vstar = .5 * (_vR + _vL);
 			for (PS::U32 loop = 0; loop < 10; loop++) {
 				ppre = p;
-				if ((p / p1 < critif)) {
+				if ((fabs(p / pRs) + 1.0e-9 < critif)) {
 					W1 =
-							sqrt(p1 * rho1)
+							sqrt(pRs * _rhoR)
 									* ((PARAM::GAMMA - 1.0)
 											/ (2.0 * sqrt(PARAM::GAMMA)))
-									* (1.0 - p / p1)
-									/ (1.0 - pow(p / p1, 1.0 / alpha));
+									* (1.0 - p / pRs)
+									/ (1.0 - pow(p / pRs, 1.0 / alpha));
 				} else {
-					W1 = sqrt(p1 * rho1)
+					W1 = sqrt(pRs * _rhoR)
 							* sqrt(
-									0.5 * (PARAM::GAMMA + 1.0) * p / (p1s)
+									0.5 * (PARAM::GAMMA + 1.0) * p / (pRs)
 											+ 0.5 * (PARAM::GAMMA - 1.0));
 				}
-				if ((p / p2 < critif)) {
+				if ((fabs(p / pLs) + 1.0e-9 < critif)) {
 					W2 =
-							sqrt(p2 * rho2)
+							sqrt(pLs * _rhoL)
 									* ((PARAM::GAMMA - 1.0)
 											/ (2.0 * sqrt(PARAM::GAMMA)))
-									* (1.0 - p / p2)
-									/ (1.0 - pow(p / p2, 1.0 / alpha));
+									* (1.0 - p / pLs)
+									/ (1.0 - pow(p / pLs, 1.0 / alpha));
 				} else {
-					W2 = sqrt(p2 * rho2)
+					W2 = sqrt(pLs * _rhoL)
 							* sqrt(
-									0.5 * (PARAM::GAMMA + 1.0) * p / (p2s)
+									0.5 * (PARAM::GAMMA + 1.0) * p / (pLs)
 											+ 0.5 * (PARAM::GAMMA - 1.0));
 				}
-				p = ((p2s / W2 + p1s / W1) + v2 - v1) / (1.0 / W2 + 1.0 / W1);
-				if (p < 0.0)
+				p = ((pLs / W2 + pRs / W1) + _vL - _vR) / (1.0 / W2 + 1.0 / W1);
+				if (p < 0.0) {
 					p = 0.5 * ppre;
-				if (fabs(1.0 - p / ppre) < 1e-3)
 					break;
+				} else if (1.e-12 + fabs(1.0 - p / ppre) < 1.e-3) {
+					break;
+				}
 			}
-			vstar = ((W1 * v1 + W2 * v2) + p2s - p1s) / (W1 + W2);
+			vstar = ((W1 * _vR + W2 * _vL) + pLs - pRs) / (W1 + W2);
 			pstar = p;
 			if ((pstar != pstar) || vstar != vstar || pstar <= 0.0) {
-				vstar = .5 * (v1 + v2);
-				pstar = .5 * (p1 + p2);
-				std::cout << p1 << "/// " << p2 << "/// " << p1s << "/// "
-						<< "/// " << p2s << "/// " << W1 << "/// " << W2
+				vstar = .5 * (vR + vL);
+				pstar = .5 * (_pR + _pL);
+				std::cout << _pR << "/// " << _pL << "/// " << pRs << "/// "
+						<< "/// " << pLs << "/// " << W1 << "/// " << W2
 						<< std::endl;
 			}
 		}
+
 	}
 	void operator ()(const EPI::Hydro* const ep_i, const PS::S32 Nip,
 			const EPJ::Hydro* const ep_j, const PS::S32 Njp,
@@ -326,7 +304,6 @@ public:
 
 		for (PS::S32 i = 0; i < Nip; ++i) {
 			hydro[i].clear();
-			PS::F64 v_sig_max = 0.0;
 			const EPI::Hydro& ith = ep_i[i];
 
 			for (PS::S32 j = 0; j < Njp; ++j) {
@@ -355,13 +332,7 @@ public:
 				}
 
 			}
-			//	hydro[i].acc += hydro[i].extF + ep_i[i].grav;
 			double dt = ep_i[i].dt;
-//			if( hydro[i].acc* hydro[i].acc >1e10){
-//			std::cout <<dt << "in force " << hydro[i].acc << std::endl;
-//			}
-			hydro[i].vel_half_old = ith.vel
-					+ 0.5 * (hydro[i].acc + ep_i[i].grav + ep_i[i].extF) * dt;
 			PS::F64vec vel_half = ith.vel + 0.5 * hydro[i].acc * dt;
 			for (PS::S32 j = 0; j < Njp; ++j) {
 				const EPJ::Hydro& jth = ep_j[j];
@@ -390,13 +361,38 @@ public:
 					interpo = (PSTAR) * (gradW_hi * VIJ_I + gradW_hj * VIJ_J);
 
 					vij = VSTAR * eij;
-					hydro[i].eng_dot -= jth.mass * (vij - hydro[i].vel_half_old)
-							* interpo;
+					hydro[i].eng_dot -= jth.mass * (vij - vel_half) * interpo;
+					hydro[i].dt =
+							0.1 * ep_i[i].pres
+									/ fabs(
+											.5 * ep_i[i].grav * eij
+													* sqrt(
+															PARAM::GAMMA
+																	* ep_i[i].pres
+																	* ep_i[i].dens)
+													+ .5 * eij * ep_i[i].extF
+															* sqrt(
+																	PARAM::GAMMA
+																			* ep_i[i].pres
+																			* ep_i[i].dens)
+															* dt);
+					hydro[j].dt =
+							0.1 * ep_j[j].pres
+									/ fabs(
+											.5 * ep_j[j].grav * eij
+													* sqrt(
+															PARAM::GAMMA
+																	* ep_j[j].pres
+																	* ep_j[j].dens)
+													+ .5 * ep_j[j].extF * eij
+															* sqrt(
+																	PARAM::GAMMA
+																			* ep_j[j].pres
+																			* ep_j[j].dens));
 
 				}
 
 			}
-//hydro[i].eng_dot -=  hydro[i].vel_half_old* (hydro[i].extF + ep_i[i].grav);
 
 			PS::F64vec bh_loc(0, 0, 0);
 
@@ -414,8 +410,7 @@ public:
 			formfac = 1.0;
 			PS::F64vec BHGrav = (ep_i[i].pos - bh_loc) * formfac * PARAM::G
 					* PARAM::sM_BH / (_r3);
-			hydro[i].extF = BHGrav;
-			hydro[i].dt = 0.004 * sqrt(ith.smth / sqrt(BHGrav*BHGrav))		;
+			hydro[i].extF = -BHGrav;
 
 		}
 
@@ -423,6 +418,25 @@ public:
 
 }
 ;
+//template<class TParticleJ> class CalcGravityForce {
+//public:
+//	void operator ()(const EPI::Grav* const ep_i, const PS::S32 Nip,
+//			const TParticleJ* const ep_j, const PS::S32 Njp,
+//			RESULT::Grav* const grav) {
+//		for (PS::S32 i = 0; i < Nip; ++i) {
+//			const EPI::Grav& ith = ep_i[i];
+//			for (PS::S32 j = 0; j < Njp; ++j) {
+//				const TParticleJ& jth = ep_j[j];
+//				const PS::F64vec dr = ith.pos - jth.pos;
+//				const PS::F64 dr2 = dr * dr;
+//				const PS::F64 dr_inv = PARAM::G / sqrt(dr2 + ith.getEps2());
+//				const PS::F64 m_dr3_inv = jth.mass * math::pow3(dr_inv);
+//				grav[i].acc += -m_dr3_inv * dr;
+//				grav[i].pot += -jth.mass * dr_inv;
+//			}
+//		}
+//	}
+//};
 
 template<class TParticleJ> class CalcGravityForce {
 public:
@@ -438,31 +452,34 @@ public:
 					const PS::F64 dr2 = dr * dr;
 
 					const PS::F64 rij = sqrt(dr * dr);
-					const PS::F64 dr_inv = 1.0 / sqrt(dr2+ .25*(ith.smth + jth.smth)*(ith.smth + jth.smth));
+					const PS::F64 dr_inv = 1.0 / sqrt(dr2 + 1e-18);
 
-//					if (typeid(TParticleJ) == typeid(EPJ::Grav)) {
-//
-//						const PS::F64 m_dr3_inv = jth.mass * math::pow3(dr_inv);
-//						PS::F64 hmax = fmax(ith.smth, jth.smth);
-//						PS::F64 hmin = fmin(ith.smth, jth.smth);
-//						PS::F64 x = hmin / hmax;
-//						PS::F64 fit = 1.0 / (1.0 + x * x);
-//						PS::F64 xtilde = rij * fit / hmax;
-//						PS::F64 xtilde2 = xtilde * xtilde;
-//
-//						PS::F64 formfac = 0.0;
-//
-//						formfac = erf(xtilde)
-//								- exp(-xtilde2) * xtilde * 2 / sqrt(M_PI);
-//						grav[i].acc += -PARAM::G * m_dr3_inv * dr * formfac;
-//					} else if (typeid(TParticleJ) == typeid(PS::SPJMonopole)) {
+					if (typeid(TParticleJ) == typeid(EPJ::Grav)) {
+
 						const PS::F64 m_dr3_inv = jth.mass * math::pow3(dr_inv);
+						PS::F64 hmax = fmax(ith.smth, jth.smth);
+						PS::F64 hmin = fmin(ith.smth, jth.smth);
+						PS::F64 x = hmin / hmax;
+						PS::F64 fit = 1.0 / (1.0 + x * x);
+						PS::F64 xtilde = rij * fit / hmax;
+						PS::F64 xtilde2 = xtilde * xtilde;
+
+						PS::F64 formfac = 0.0;
+
+						formfac = erf(xtilde)
+								- exp(-xtilde2) * xtilde * 2 / sqrt(M_PI);
+						grav[i].acc += -PARAM::G * m_dr3_inv * dr * formfac;
+					} else if (typeid(TParticleJ) == typeid(PS::SPJMonopole)) {
+						const PS::F64 m_dr3_inv = jth.mass * math::pow3(dr_inv);
+
 						PS::F64 formfac = 1.0;
 						grav[i].acc += -PARAM::G * m_dr3_inv * dr * formfac;
 						grav[i].pot += -PARAM::G * jth.mass * dr_inv;
-//					}
+					}
+
 				}
 			}
 		}
 	}
 };
+//

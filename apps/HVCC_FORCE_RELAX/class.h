@@ -10,6 +10,8 @@ class FileHeader {
 public:
 	int Nbody;
 	double time;
+	double phy_time;
+
 	int readAscii(FILE* fp) {
 		fscanf(fp, "%lf\n", &time);
 		fscanf(fp, "%d\n", &Nbody);
@@ -19,17 +21,39 @@ public:
 		fprintf(fp, "%e\n", time);
 		fprintf(fp, "%d\n", Nbody);
 	}
-	int readBinary(FILE* fp) {
-		fread(&Nbody, sizeof(PS::S32), 1, fp);
-		fread(&time, sizeof(PS::F64), 1, fp);
+#ifdef OUTPUT_VTK
+	void writeVTKAscii(FILE* fp) const {
 
-		return Nbody;
+		fprintf(fp, "# vtk DataFile Version 3.0\n");
+		fprintf(fp, "Example 3D regular grid VTK file.\n");
+		fprintf(fp, "ASCII\n");
+		fprintf(fp, "DATASET UNSTRUCTURED_GRID\n");
+		fprintf(fp, "FIELD FieldData 1\n");
+		fprintf(fp, "TIME 1 1 double\n");
+		fprintf(fp, "%e\n", phy_time);
+		fprintf(fp, "POINTS %d double\n", Nbody);
+//		fprintf(fp, "%e\n", time);
 	}
-	void writeBinary(FILE* fp) const {
-		std::cout << Nbody << std::endl;
-		fwrite(&Nbody, sizeof(PS::S32), 1, fp);
-		fwrite(&time, sizeof(PS::F64), 1, fp);
+	void writeAscii_scalars_pre_header(FILE* fp) const {
+
+		fprintf(fp, "POINT_DATA %d\n", Nbody);
 	}
+	void writeAscii_scalars_header(const char* name,FILE* fp) const {
+
+		fprintf(fp, "SCALARS %s double 1\n",name);
+		fprintf(fp, "LOOKUP_TABLE default\n");
+	}
+	void writeAscii_vectors_header(const char* name,FILE* fp) const {
+
+		fprintf(fp, "VECTORS %s double\n",name);
+//			fprintf(fp, "LOOKUP_TABLE default\n");
+	}
+	void writeAsciiTxt(FILE* fp) const {
+
+		fprintf(fp, "%d\n", Nbody);
+		fprintf(fp, "%e\n", time);
+	}
+#endif
 };
 
 namespace RESULT {
@@ -52,7 +76,30 @@ public:
 	PS::F64vec gradvperp_x, gradvperp_y, gradvperp_z;
 	PS::F64vec gradBperp_x, gradBperp_y, gradBperp_z;
 	PS::F64 div_v;
+
 	PS::F64vec rot_v;
+	PS::F64vec gradV;
+	PS::F64vec gradvel_x;
+	PS::F64vec gradvel_y;
+	PS::F64vec gradvel_z;
+	PS::F64vec gradvel;
+
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	void clear() {
 		grad_dens = 0.0;
 		gradP = 0.0;
@@ -63,16 +110,43 @@ public:
 		gradBperp_x = gradBperp_y = gradBperp_z = 0.0;
 		div_v = 0.0;
 		rot_v = 0.0;
+		gradV = 0.0;
+		gradvel_x = 0.;
+		gradvel_y = 0.;
+		gradvel_z = 0.;
+		gradvel = 0.0;
+
+		ngrad_dens = 0.0;
+		ngradP = 0.0;
+		ngradPT = 0.0;
+		ngradVpara = 0.0;
+		ngradBperp2 = 0.0;
+
+		nrot_v = 0.0;
+		ngradV = 0.0;
+		ngraddens = 0.0;
+		ngradpres = 0.0;
+		ngradvel_x = 0.;
+		ngradvel_y = 0.;
+		ngradvel_z = 0.;
+		ngradvel = 0.0;
 	}
 };
 //Hydro force
+
 class Hydro {
 public:
+	PS::F64vec vel_half_old;
+
 	PS::F64vec acc;
 	PS::F64 eng_dot;
 	PS::F64vec BoverDens_dot;
 	PS::F64 dt;
+	PS::F64 div_B;
+	PS::F64vec extF;
 	void clear() {
+		div_B = 0.0;
+		extF = 0.;
 		acc = 0.;
 		eng_dot = 0.;
 		BoverDens_dot = 0.;
@@ -98,15 +172,20 @@ public:
 class RealPtcl {
 public:
 	PS::F64 mass;
-	PS::F64vec pos, vel, acc;
+	PS::F64vec pos, old_pos, vel, old_vel, acc;
+	PS::F64vec extF;
 	PS::F64 dens; //DENSity
-	PS::F64 eng; //ENerGy
+	PS::F64 eng, old_eng; //ENerGy
 	PS::F64 pres; //PRESsure
-	PS::F64 smth; //SMooTHing length
-	PS::F64 smth_min;
-	PS::F64 smth_max;
+	PS::F64 smth, old_smth; //SMooTHing length
 	PS::F64 snds; //SouND Speed
+	PS::F64 Lambda;
+	PS::F64 Gamma;
+	PS::F64 deltaB;
+	PS::F64 cooling_timescale, sg_timescale, bh_timescale, hydro_timescale,
+			eng_timescale;
 	PS::F64 div_v;
+	PS::F64 div_B;
 	PS::F64vec rot_v;
 	PS::F64 Bal; //Balsala switch
 	PS::F64vec grad_dens;
@@ -116,6 +195,30 @@ public:
 	PS::F64vec gradBperp_x, gradBperp_y, gradBperp_z;
 	PS::F64vec gradBperp2;
 	PS::F64vec gradVpara;
+	PS::F64vec xstar;
+	PS::F64vec gradV; //gradient of specific volume
+	PS::F64vec graddens; //gradient of density
+	PS::F64vec gradpres; //gradient of pressure
+	PS::F64vec gradvel_x;
+	PS::F64vec gradvel_y;
+	PS::F64vec gradvel_z;
+	PS::F64vec gradvel;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	PS::F64vec MagneticB;
 	PS::F64vec BoverDens_dot;
 	PS::F64vec BoverDens;
@@ -126,15 +229,33 @@ public:
 	PS::F64vec magneticB_half;
 	PS::F64 dt;
 	PS::S64 id;
-
+	PS::S64 minus_eng;
 	PS::F64vec grav;
 	PS::F64 pot;
-	//Copy functions
+
+	const char* scalars[28] = { "mass", "pres", "dens", "vx", "vy", "vz", "T",
+			"eng", "ab_e", "ab_HI", "ab_HeI", "ab_OI", "ab_CI", "ab_H2",
+			"ab_CO", "ab_HII", "ab_CII", "ab_FeII", "ab_SiII", "cooling",
+			"heating", "cooling_timescale", "MagneticB_x", "MagneticB_y",
+			"MagneticB_z", "intE", "divB", "deltaB" };
+	const char* vectors[4] = { "vel", "acc", "pos", "MagneticB" };
+
+	PS::F64 abundances[PARAM::COMP];
+	PS::F64 old_abundances[PARAM::COMP];
+
+//Copy functions
 	void copyFromForce(const RESULT::Dens& dens) {
 		this->dens = dens.dens;
 		this->smth = dens.smth;
 	}
 	void copyFromForce(const RESULT::Drvt& drvt) {
+
+		this->gradV = drvt.gradV;
+		this->gradvel_x = drvt.gradvel_x;
+		this->gradvel_y = drvt.gradvel_y;
+		this->gradvel_z = drvt.gradvel_z;
+		this->gradvel = drvt.gradvel;
+
 		this->gradPT = drvt.gradPT;
 		this->gradBperp2 = drvt.gradBperp2;
 		this->gradVpara = drvt.gradVpara;
@@ -151,19 +272,42 @@ public:
 		this->Bal = fabs(drvt.div_v)
 				/ (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v)
 						+ 1.0e-4 * this->snds / this->smth); //Balsala switch
+
+		this->ngrad_dens = drvt.ngrad_dens;
+		this->ngrad_dens = drvt.ngrad_dens;
+		this->ngradP = drvt.ngradP;
+		this->ngradPT = drvt.ngradPT;
+		this->ngradVpara = drvt.ngradVpara;
+		this->ngradBperp2 = drvt.ngradBperp2;
+		this->ngradvperp_x = drvt.ngradvperp_x;
+		this->ngradvperp_y = drvt.ngradvperp_y;
+		this->ngradvperp_z = drvt.ngradvperp_z;
+		this->ngradBperp_x = drvt.ngradBperp_x;
+		this->ngradBperp_y = drvt.ngradBperp_y;
+		this->ngradBperp_z = drvt.ngradBperp_z;
+		this->nrot_v = drvt.nrot_v;
+		this->ngradV = drvt.ngradV;
+		this->ngraddens = drvt.ngraddens;
+		this->ngradpres = drvt.ngradpres;
+		this->ngradvel_x = drvt.ngradvel_x;
+		this->ngradvel_y = drvt.ngradvel_y;
+		this->ngradvel_z = drvt.ngradvel_z;
+		this->ngradvel = drvt.ngradvel;
 	}
 	void copyFromForce(const RESULT::Hydro& force) {
 		this->acc = force.acc;
 		this->eng_dot = force.eng_dot;
+		this->extF = force.extF;
 		this->dt = force.dt;
 		this->BoverDens_dot = force.BoverDens_dot;
+		this->div_B = force.div_B;
 	}
 	void copyFromForce(const RESULT::Grav& force) {
 		this->grav = force.acc;
 		this->pot = force.pot;
 		//not copy dt
 	}
-	//Give necessary values to FDPS
+//Give necessary values to FDPS
 	PS::F64 getCharge() const {
 		return this->mass;
 	}
@@ -181,15 +325,39 @@ public:
 		const PS::F64vec radial = this->pos / radial_mag;
 		const PS::F64 radialForce_mag = this->acc * (radial);
 		const PS::F64 radialForce_grav_mag = this->grav * radial;
+		const PS::F64 radialForce_extF_mag = this->extF * radial;
+
+		double mu = this->abundances[1] + this->abundances[7]
+				+ 2.0 * this->abundances[5] + 4.0 * this->abundances[2];
+		mu /= (this->abundances[1] + this->abundances[7] + this->abundances[5]
+				+ this->abundances[2] + this->abundances[0]);
+		PS::F64 NUMDENS_CGS = this->dens * PARAM::SMassDens
+				/ (mu * PARAM::PROTONMASS);
+		PS::F64 tem = mu * PARAM::PROTONMASS_CGS * this->pres
+				* PARAM::SEng_per_Mass
+				/ (this->dens * PARAM::KBOLTZ_cgs
+						* (1.1 + PARAM::i_abundance_e - PARAM::i_abundance_H2));
 		//14
-		//15,16,17
+		//15,16,17 ,18->grav_force
+		//23 sg,24 bh,25 hydro 26 eng
+		//38 minus_eng
 		fprintf(fp,
-				"%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
+				"%lld"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e"
+						"\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
 				this->id, this->mass, this->smth, this->pos.x, this->pos.y,
 				this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens,
 				this->eng, this->pres, this->MagneticB.x, this->MagneticB.y,
 				this->MagneticB.z, radial_mag, radialForce_mag,
-				radialForce_grav_mag);
+				radialForce_grav_mag, radialForce_extF_mag, tem, NUMDENS_CGS,
+				this->Lambda, this->cooling_timescale, this->sg_timescale,
+				this->bh_timescale, this->hydro_timescale, this->eng_timescale,
+				this->abundances[0], this->abundances[1], this->abundances[2],
+				this->abundances[3], this->abundances[4], this->abundances[5],
+				this->abundances[6], this->abundances[7], this->abundances[8],
+				this->abundances[9], mu, this->div_B, this->deltaB);
 	}
 	void readAscii(FILE* fp) {
 		PS::F64 radial_mag = sqrt(this->pos * this->pos);
@@ -197,45 +365,281 @@ public:
 		PS::F64 radialForce_mag = this->acc * (radial);
 		PS::F64 radialForce_grav_mag = this->grav * radial;
 		fscanf(fp,
-				"%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
-				&this->id, &this->mass, &this->pos.x, &this->pos.y,
-				&this->pos.z, &radial, &this->vel.x, &this->vel.y, &this->vel.z,
-				&this->dens, &this->eng, &this->pres);
+				"%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf",
+				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
+				&this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z,
+				&this->dens, &this->eng, &this->pres, &this->MagneticB.x,
+				&this->MagneticB.y, &this->MagneticB.z, &radial_mag,
+				&radialForce_mag, &radialForce_grav_mag);
+//#ifdef RESTART
+//		PS::F64 radial_mag = sqrt(this->pos * this->pos);
+//		PS::F64vec radial = this->pos / radial_mag;
+//		PS::F64 radialForce_mag = this->acc * (radial);
+//		PS::F64 radialForce_grav_mag = this->grav * radial;
+//		PS::F64 mu, tem, NUMDENS_CGS;
+//		PS::S64 minus_eng;
+//		PS::F64 radialForce_extF_mag;
+//
+//		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
+//				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
+//				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf"
+//				"\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf%lf%lf",
+//				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
+//				&this->pos.z, &this->vel.x, &this->vel.y,&this->vel.z, &this->dens,
+//				&this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y, &this->MagneticB.z,
+//				&radial_mag, &radialForce_mag, &radialForce_grav_mag,& radialForce_extF_mag, &tem,
+//				&NUMDENS_CGS, &this->Lambda, &this->cooling_timescale ,&this->sg_timescale,&this->bh_timescale,
+//				&this->hydro_timescale,&this->eng_timescale,
+//				&this->abundances[0], &this->abundances[1], &this->abundances[2],
+//				&this->abundances[3], &this->abundances[4], &this->abundances[5],
+//				&this->abundances[6], &this->abundances[7], &this->abundances[8],
+//				&this->abundances[9], &mu,&this->div_B,&this->deltaB);
+//		if (this->eng < 0.0 || this->pres < 0.0) {
+//			std::cout << pres << "in class.h readAscii" << eng<<" "<<dens << std::endl;
+//
+//		}
+//
+//#endif
+////		std::cout << this->mass << std::endl;
+//#ifdef INIT_FROM_RELAXED_PROFILE
+//		PS::F64 radial_mag = sqrt(this->pos * this->pos);
+//		PS::F64vec radial = this->pos / radial_mag;
+//		PS::F64 radialForce_mag = this->acc * (radial);
+//		PS::F64 radialForce_grav_mag = this->grav * radial;
 //		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &this->id, &this->mass,&this->smth, &this->pos.x, &this->pos.y, &this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z, &this->dens, &this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y,
-//						&this->MagneticB.z, &radial_mag, &radialForce_mag, &radialForce_grav_mag);
-
-//		std::cout << this->mass << std::endl;
+//				&this->MagneticB.z, &radial_mag, &radialForce_mag, &radialForce_grav_mag);
+//		double mu = 2.34;
+//		double mu_new = 2.34;
+//		PS::F64 NUMDENS_CGS = 0;
+//		for (int i = 0; i < 100; i++) {
+//			mu = mu_new;
+//			NUMDENS_CGS = dens * PARAM::SMassDens / (mu * PARAM::PROTONMASS);
+//
+//			this->abundances[0] = fitAB_E(NUMDENS_CGS);
+//			this->abundances[1] = fitAB_HI(NUMDENS_CGS);
+//			this->abundances[2] = PARAM::i_abundance_HeI;
+//			this->abundances[3] = PARAM::i_abundance_OI;
+//			this->abundances[4] = PARAM::i_abundance_CI;
+//			this->abundances[5] = fitAB_H2(NUMDENS_CGS);
+//			this->abundances[6] = fitAB_CO(NUMDENS_CGS);
+//			this->abundances[7] = fmax(1. - 2. * this->abundances[5] - this->abundances[1], 0);
+//			this->abundances[8] = fmax(this->abundances[0] - this->abundances[7] - PARAM::i_abundance_SiII, 0);
+//			this->abundances[9] = PARAM::i_abundance_FeII;
+//			this->abundances[10] = PARAM::i_abundance_SiII;
+//			mu_new = this->abundances[1] + this->abundances[7] + 2.0 * this->abundances[5] + 4.0 * this->abundances[2];
+//			mu_new /= (this->abundances[1] + this->abundances[7] + this->abundances[5] + this->abundances[2] + this->abundances[0]);
+//			if (fabs(mu - mu_new) < 1e-3) {
+//				break;
+//			}
+//		}
+//
+//		double GAMMA = 5. * (1.1 * this->abundances[1] + this->abundances[0] + this->abundances[5]) / (3. * (1.1 * this->abundances[1] + this->abundances[0] + this->abundances[5]));
+//		GAMMA = 5./3.;
+//		mu = 2.34;
+//		eng = fitTEMP(NUMDENS_CGS) * PARAM::KBOLTZ_cgs * (1.1 + this->abundances[0] - this->abundances[5]) / ((GAMMA - 1.0) * mu * PARAM::PROTONMASS_CGS) / PARAM::SEng_per_Mass;
+//		this->eng =eng;
+//		//		std::cout << NUMDENS_CGS << "hhh" << eng << std::endl;
+//		pres = (GAMMA - 1.0) * dens * eng;
+//#endif
 
 	}
-	void readBinary(FILE *fp) {
-		static PS::S32 ONE = 1;
-		static bool is_little_endian = *reinterpret_cast<char*>(&ONE) == ONE;
 
-		PS::F64 x, y, z, vx, vy, vz, mass, dens, eng, pres, radialForce_mag,
-				radialForce_grav_mag, radialForce_mag_ref;
-		PS::S32 id;
+#ifdef OUTPUT_VTK
+	void writeAscii_pos(FILE* fp) const {
 
-		fread(&this->id, sizeof(PS::S32), 1, fp);
-		fread(&this->mass, sizeof(PS::F64), 1, fp);
-		fread(&this->pos.x, sizeof(PS::F64), 1, fp);
-		fread(&this->pos.y, sizeof(PS::F64), 1, fp);
-		fread(&this->pos.z, sizeof(PS::F64), 1, fp);
-		fread(&this->vel.x, sizeof(PS::F64), 1, fp);
-		fread(&this->vel.y, sizeof(PS::F64), 1, fp);
-		fread(&this->vel.z, sizeof(PS::F64), 1, fp);
-		fread(&this->dens, sizeof(PS::F64), 1, fp);
-		fread(&this->eng, sizeof(PS::F64), 1, fp);
-		fread(&this->pres, sizeof(PS::F64), 1, fp);
-		fread(&radialForce_mag, sizeof(PS::F64), 1, fp);
-		fread(&radialForce_grav_mag, sizeof(PS::F64), 1, fp);
-		fread(&radialForce_mag_ref, sizeof(PS::F64), 1, fp);
-//		std::cout<< id<<" "<<mass<<std::endl;
+//		fprintf(fp, "%lf\t%lf\t%lf\t\n", this->pos.x*PARAM::SL/PARAM::pc_cgs,
+//				this->pos.y*PARAM::SL/PARAM::pc_cgs, this->pos.z*PARAM::SL/PARAM::pc_cgs);
+//
+//		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id, this->mass, this->pos.x,
+//				this->pos.y, this->pos.z, sqrt(pow(this->pos.x, 2) + pow(this->pos.y, 2) + pow(this->pos.z, 2)),
+//				this->vel.x, this->vel.y, this->vel.z, this->dens, this->eng, this->pres);
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+		fprintf(fp, "%lf\t%lf\n", this->pos.x,
+				this->pos.y);
+#else
+		fprintf(fp, "%lf\t%lf\t%lf\t\n", this->pos.x,
+				this->pos.y, this->pos.z);
+#endif
 	}
+	void writeAscii_vectors(const char* name,FILE* fp) const {
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+		if(name == "vel") {
+			fprintf(fp, "%lf\t%lf\t%lf\t", this->vel.x*PARAM::SVel/1e5, this->vel.y*PARAM::SVel/1e5);
+		}
+#else
+		if(std::strcmp(name, "vel")==0 ) {
+			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->vel.x*PARAM::SVel/1e5, this->vel.y*PARAM::SVel/1e5,this->vel.z*PARAM::SVel/1e5);
+		}
+		if(std::strcmp(name, "acc")==0 ) {
+			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->acc.x, this->acc.y,this->acc.z);
+		}
+		if(std::strcmp(name, "pos")==0 ) {
+			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->pos.x, this->pos.y,this->pos.z);
+		}
+		if(std::strcmp(name, "magneticB")==0 ) {
+			fprintf(fp, "%lf\t%lf\t%lf\t\t", this->MagneticB.x, this->MagneticB.y,this->MagneticB.z);
+		}
+
+#endif
+	}
+//scalar name in char
+	void writeAscii_scalars(const char* name,FILE* fp) const {
+		//Convert them to CGS
+
+//	std::cout << "returned temp :" <<" "<<name<< std::endl;
+//	PS::F64 tem = this->pres / ( PARAM::SKB*NUMDENS_CGS *PARAM::SL*PARAM::SL*PARAM::SL*(1.1+this->abundances[0]-2.*this->abundances[5]));
+//		std::cout<<this->pres<<std::endl;
+		double mu = this->abundances[1]+this->abundances[7] + 2.0 * this->abundances[5] + 4.0 *this->abundances[2];
+		mu /= (this->abundances[1]+ this->abundances[7] +this->abundances[5] + this->abundances[2] + this->abundances[0]);
+		PS::F64 NUMDENS_CGS =this-> dens * PARAM::SMassDens / (mu*PARAM::PROTONMASS);
+		PS::F64 tem = mu * PARAM::PROTONMASS_CGS * this->pres * PARAM::SEng_per_Mass / (this->dens * PARAM::KBOLTZ_cgs * (1.1 + PARAM::i_abundance_e - PARAM::i_abundance_H2));
+		double GAMMA = 5./3.;
+		if(std::strcmp(name , "mass")==0) {
+			fprintf(fp, "%lf\n", this->mass*PARAM::SM/PARAM::M_SUN_cgs);
+		}
+		if(std::strcmp(name , "MagneticB_x")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.x);
+		}
+		if(std::strcmp(name , "MagneticB_y")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.y);
+		}
+		if(std::strcmp(name , "MagneticB_z")==0) {
+			fprintf(fp, "%lf\n", this->MagneticB.z);
+		}
+		if(std::strcmp(name , "intE")==0) {
+			fprintf(fp, "%lf\n", this->pres/((GAMMA -1)*(this->dens)));
+		}
+		if(std::strcmp(name,"dens")==0) {
+
+			fprintf(fp, "%lf\n", this->dens );
+		}
+		if(std::strcmp(name,"pres")==0) {
+			fprintf(fp, "%lf\n", this->pres);
+		}
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+		if(name == "vx") {
+			fprintf(fp, "%lf\n", this->vel.x*PARAM::SVel/1e5);
+		}
+		if(name == "vy") {
+			fprintf(fp, "%lf\n", this->vel.y*PARAM::SVel/1e5);
+		}
+#else
+		if(std::strcmp(name, "vx")==0 ) {
+			fprintf(fp, "%lf\n", this->vel.x*PARAM::SVel/1e5);
+		}
+		if(std::strcmp(name, "vy")==0 ) {
+			fprintf(fp, "%lf\n", this->vel.y*PARAM::SVel/1e5);
+		}if(std::strcmp(name, "vz")==0) {
+			fprintf(fp, "%lf\n", this->vel.z*PARAM::SVel/1e5);
+		}
+#endif
+		if(std::strcmp(name, "T")==0 ) {
+			fprintf(fp, "%lf\n", tem);
+		}if(std::strcmp(name, "eng")==0 ) {
+			fprintf(fp, "%lf\n", this->eng);
+		}
+
+		if(std::strcmp(name, "ab_e")==0 ) {
+			fprintf(fp, "%lf\n", this->abundances[0]);
+		}
+		if(std::strcmp(name, "ab_HI")==0) {
+			fprintf(fp, "%lf\n", this->abundances[1]);
+		}
+		if(std::strcmp(name, "ab_HeI")==0) {
+			fprintf(fp, "%lf\n", this->abundances[2]);
+		}
+		if(std::strcmp(name, "ab_OI")==0) {
+			fprintf(fp, "%lf\n", this->abundances[3]);
+		}
+		if(std::strcmp(name, "ab_CI")==0) {
+			fprintf(fp, "%lf\n", this->abundances[4]);
+		}
+		if(std::strcmp(name, "ab_H2")==0) {
+			fprintf(fp, "%lf\n", this->abundances[5]);
+		}
+		if(std::strcmp(name,"ab_CO")==0) {
+			fprintf(fp, "%lf\n", this->abundances[6]);
+		}
+		if(std::strcmp(name, "ab_HII")==0) {
+			fprintf(fp, "%lf\n", this->abundances[7]);
+		}
+		if(std::strcmp(name, "ab_CII")==0) {
+			fprintf(fp, "%lf\n", this->abundances[8]);
+		}
+		if(std::strcmp(name, "ab_FeII")==0) {
+			fprintf(fp, "%lf\n", this->abundances[9]);
+		}
+		if(std::strcmp(name,"ab_SiII")==0) {
+			fprintf(fp, "%lf\n", this->abundances[9]);
+		}
+
+		if(std::strcmp(name,"cooling")==0) {
+			fprintf(fp, "%lf\n", this->Lambda);
+		}
+		if(std::strcmp(name, "heating")==0) {
+			fprintf(fp, "%lf\n",this->snds);
+		}
+
+		if(std::strcmp(name,"cooling_timescale")==0) {
+			fprintf(fp, "%lf\n", this->cooling_timescale);
+		}
+		if(std::strcmp(name,"divB")==0) {
+			fprintf(fp, "%lf\n", this->div_B);
+		}
+		if(std::strcmp(name,"deltaB")==0) {
+			fprintf(fp, "%lf\n", this->deltaB);
+		}
+
+		//		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id, this->mass, this->pos.x,
+		//				this->pos.y, this->pos.z, sqrt(pow(this->pos.x, 2) + pow(this->pos.y, 2) + pow(this->pos.z, 2)),
+		//				this->vel.x, this->vel.y, this->vel.z, this->dens, this->eng, this->pres);
+	}
+
+	void writeAsciiTxt(FILE* fp) const {
+		PS::F64 massdens = this->dens* PARAM::SMassDens;
+		PS::F64 numdens = this->dens* PARAM::SMassDens/PARAM::PROTONMASS;
+		PS::F64 tem = this->dens;
+//		PS::F64 tem = this->eng * this->dens * (PARAM::GAMMA - 1.0) / (numdens * PARAM::sNumDens * PARAM::sKB);
+		//		std::cout <<tem << std::endl;
+		//		PS::F64 tem = this->eng;
+//		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id,
+//				this->mass * PARAM::SM / PARAM::M_SUN_cgs, this->pos.x * PARAM::SL / PARAM::pc_cgs,
+//				this->pos.y * PARAM::SL / PARAM::pc_cgs, this->pos.z * PARAM::SL / PARAM::pc_cgs,
+//				sqrt(pow(this->pos.x, 2) + pow(this->pos.y, 2) + pow(this->pos.z, 2)) * PARAM::SL / PARAM::pc_cgs,
+//				this->vel.x * PARAM::sVel / 1e6, this->vel.y * PARAM::sVel / 1e6, this->vel.z * PARAM::sVel / 1e6,
+//				this->snds * PARAM::sVel / 1e6, tem, this->pres);
+
+		PS::F64 radial_mag = sqrt(this->pos * this->pos);
+		PS::F64vec radial = this->pos / radial_mag;
+		PS::F64 acc_mag = PARAM::GAMMA * this->pres / this->dens;
+		PS::F64 radialForce_mag_ref =this-> gradP *radial;
+		//		PS::F64vec perpForce = acc*radial - radialForce;=
+		//		PS::F64 radialForce_mag =acc_mag*(this->graddens.x*radial_mag/this->pos.x + this->graddens.y*radial_mag/this->pos.y +this->graddens.z*radial_mag/this->pos.z );
+		PS::F64 radialForce_mag = (this->acc ) * radial;
+		PS::F64 vol = pow(radial_mag, 3) * M_PI * 4. / 3.;
+
+		PS::F64 radialForce_grav_mag =this->grav*radial;
+//		PS::F64 radialForce_mag_ref = -(cos(radial_mag) / radial_mag - sin(radial_mag) / pow(radial_mag, 2));
+		//		PS::F64 perpForce_mag = sqrt(perpForce * perpForce);
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id, this->mass,
+				this->pos.x, this->pos.y, radial_mag, this->vel.x, this->vel.y, this->dens,
+				this->eng, this->pres, radialForce_mag, radialForce_grav_mag, radialForce_mag_ref,this->smth);
+#else
+		fprintf(fp, "%ld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", this->id, this->mass,
+				this->pos.x, this->pos.y, this->pos.z, radial_mag, this->vel.x, this->vel.y, this->vel.z, this->dens,
+				this->eng, this->pres, radialForce_mag, radialForce_grav_mag, radialForce_mag_ref,this->smth);
+#endif
+
+	}
+#endif
+
 	void setPressure() {
-		pres = (PARAM::GAMMA - 1) * dens * eng;
-//		pres = .4 * pow(dens, PARAM::GAMMA);
+
+		pres = .4 * pow(dens, PARAM::GAMMA);
 		snds = sqrt(PARAM::GAMMA * pres / dens);
 	}
+
 };
 
 namespace EPI {
@@ -300,12 +704,37 @@ public:
 	PS::F64vec gradvperp_x, gradvperp_y, gradvperp_z;
 	PS::F64vec gradBperp_x, gradBperp_y, gradBperp_z;
 	PS::F64vec grav;
-
+	PS::F64vec gradV;
+	PS::F64vec graddens;
+	PS::F64vec gradpres;
+	PS::F64vec gradvel_x;
+	PS::F64vec gradvel_y;
+	PS::F64vec gradvel_z;
+	PS::F64vec gradvel;
+	PS::F64vec xstar;
 	PS::F64 dt;
 	PS::F64vec MagneticB;
 	PS::F64vec vel_half;
+	PS::F64vec extF;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
 	PS::S64 id; ///DEBUG
 	void copyFromFP(const RealPtcl& rp) {
+		this->extF = rp.extF;
 		this->grav = rp.grav;
 		this->gradPT = rp.gradPT;
 		this->gradBperp2 = rp.gradBperp2;
@@ -329,6 +758,32 @@ public:
 		this->gradvperp_z = rp.gradvperp_z;
 		this->gradP = rp.gradP;
 		this->grad_dens = rp.grad_dens;
+		this->gradV = rp.gradV;
+		this->graddens = rp.graddens;
+		this->gradpres = rp.gradpres;
+		this->gradvel_x = rp.gradvel_x;
+		this->gradvel_y = rp.gradvel_y;
+		this->gradvel_z = rp.gradvel_z;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngradP = rp.ngradP;
+		this->ngradPT = rp.ngradPT;
+		this->ngradVpara = rp.ngradVpara;
+		this->ngradBperp2 = rp.ngradBperp2;
+		this->ngradvperp_x = rp.ngradvperp_x;
+		this->ngradvperp_y = rp.ngradvperp_y;
+		this->ngradvperp_z = rp.ngradvperp_z;
+		this->ngradBperp_x = rp.ngradBperp_x;
+		this->ngradBperp_y = rp.ngradBperp_y;
+		this->ngradBperp_z = rp.ngradBperp_z;
+		this->nrot_v = rp.nrot_v;
+		this->ngradV = rp.ngradV;
+		this->ngraddens = rp.ngraddens;
+		this->ngradpres = rp.ngradpres;
+		this->ngradvel_x = rp.ngradvel_x;
+		this->ngradvel_y = rp.ngradvel_y;
+		this->ngradvel_z = rp.ngradvel_z;
+		this->ngradvel = rp.ngradvel;
 
 	}
 	PS::F64vec getPos() const {
@@ -417,10 +872,37 @@ public:
 	PS::F64vec gradvperp_x, gradvperp_y, gradvperp_z;
 	PS::F64vec gradBperp_x, gradBperp_y, gradBperp_z;
 	PS::F64vec gradVpara;
+	PS::F64vec gradV;
+	PS::F64vec graddens;
+	PS::F64vec gradpres;
+	PS::F64vec gradvel_x;
+	PS::F64vec gradvel_y;
+	PS::F64vec gradvel_z;
+	PS::F64vec gradvel;
+	PS::F64 ngrad_dens;
+	PS::F64 ngradP;
+	PS::F64 ngradPT;
+	PS::F64 ngradVpara;
+	PS::F64 ngradBperp2;
+	PS::F64 ngradvperp_x, ngradvperp_y, ngradvperp_z;
+	PS::F64 ngradBperp_x, ngradBperp_y, ngradBperp_z;
+
+	PS::F64 nrot_v;
+	PS::F64 ngradV;
+	PS::F64 ngraddens;
+	PS::F64 ngradpres;
+	PS::F64 ngradvel_x;
+	PS::F64 ngradvel_y;
+	PS::F64 ngradvel_z;
+	PS::F64 ngradvel;
+	PS::F64vec xstar;
 	PS::F64vec MagneticB;
 	PS::F64vec vel_half;
+	PS::F64vec extF;
+
 	PS::S64 id; ///DEBUG
 	void copyFromFP(const RealPtcl& rp) {
+		this->extF = rp.extF;
 		this->grav = rp.grav;
 		this->gradPT = rp.gradPT;
 		this->gradBperp2 = rp.gradBperp2;
@@ -444,6 +926,32 @@ public:
 		this->gradvperp_z = rp.gradvperp_z;
 		this->gradP = rp.gradP;
 		this->grad_dens = rp.grad_dens;
+		this->gradV = rp.gradV;
+		this->graddens = rp.graddens;
+		this->gradpres = rp.gradpres;
+		this->gradvel_x = rp.gradvel_x;
+		this->gradvel_y = rp.gradvel_y;
+		this->gradvel_z = rp.gradvel_z;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngrad_dens = rp.ngrad_dens;
+		this->ngradP = rp.ngradP;
+		this->ngradPT = rp.ngradPT;
+		this->ngradVpara = rp.ngradVpara;
+		this->ngradBperp2 = rp.ngradBperp2;
+		this->ngradvperp_x = rp.ngradvperp_x;
+		this->ngradvperp_y = rp.ngradvperp_y;
+		this->ngradvperp_z = rp.ngradvperp_z;
+		this->ngradBperp_x = rp.ngradBperp_x;
+		this->ngradBperp_y = rp.ngradBperp_y;
+		this->ngradBperp_z = rp.ngradBperp_z;
+		this->nrot_v = rp.nrot_v;
+		this->ngradV = rp.ngradV;
+		this->ngraddens = rp.ngraddens;
+		this->ngradpres = rp.ngradpres;
+		this->ngradvel_x = rp.ngradvel_x;
+		this->ngradvel_y = rp.ngradvel_y;
+		this->ngradvel_z = rp.ngradvel_z;
+		this->ngradvel = rp.ngradvel;
 
 	}
 	PS::F64vec getPos() const {
@@ -483,4 +991,5 @@ public:
 namespace SPJ {
 
 }
+
 

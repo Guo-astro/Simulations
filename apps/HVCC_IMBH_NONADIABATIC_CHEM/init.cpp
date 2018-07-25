@@ -139,15 +139,13 @@ void SetupIC_HVCC_RESTART_file(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64
 
 #else
 
-	sph_system.readParticleAscii("result/poly15000.dat", header);
+	sph_system.readParticleAscii("result/poly1e5.dat", header);
 	PS::U32 ptcl_size = sph_system.getNumberOfParticleGlobal();
 
 	for (PS::S32 i = 0; i < sph_system.getNumberOfParticleLocal(); ++i) {
-//		sph_system[i].eng = sph_system[i].pres / ((PARAM::GAMMA - 1) * sph_system[i].dens);
+		sph_system[i].eng = sph_system[i].pres / ((PARAM::GAMMA - 1) * sph_system[i].dens);
 		sph_system[i].smth = pow(sph_system[i].mass / sph_system[i].dens, 1.0 / (PS::F64) (PARAM::Dim));
-//		std::cout << "dens " << sph_system[i].dens << "eng " << sph_system[i].eng << std::endl;
-
-		PS::F32 imp = 2.5;
+		PS::F32 imp = 3.0;
 		imp *= PARAM::pc_cgs / PARAM::SL;
 		sph_system[i].pos.x += PARAM::sD_GMC_BH;
 		sph_system[i].pos.y += imp;
@@ -157,3 +155,4 @@ void SetupIC_HVCC_RESTART_file(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64
 #endif
 
 }
+
