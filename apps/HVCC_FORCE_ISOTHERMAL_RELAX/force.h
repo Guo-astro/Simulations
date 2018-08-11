@@ -286,58 +286,42 @@ public:
 
 				const PS::F64vec dr = ith.pos - jth.pos;
 				const PS::F64 delta = sqrt(dr * dr);
-				if (dr == 0.0) {
-					continue;
+				if (ith.id != jth.id) {
+					PS::F64 VIJ_I, VIJ_J, PSTAR, VSTAR;
+					PS::F64 sstar = 0.0;
+					PS::F64vec interpo = 0.0;
+					const PS::F64vec dv = ith.vel - jth.vel;
+
+					const PS::F64vec eij = dr / delta;
+					const PS::F64vec gradW_hi = kernel.gradW(dr,
+							sqrt(2.0) * ith.smth);
+					const PS::F64vec gradW_hj = kernel.gradW(dr,
+							sqrt(2.0) * jth.smth);
+
+					calc_Vij2_and_ss(ith, jth, VIJ_I, VIJ_J, sstar, delta, eij);
+
+					calc_riemann_solver(ith, jth, sstar, delta, eij, ith.dt,
+							PSTAR, VSTAR);
+					interpo = (PSTAR) * (gradW_hi * VIJ_I + gradW_hj * VIJ_J);
+					hydro[i].acc -= jth.mass * interpo;
+
 				}
-				PS::F64 PSTAR, VSTAR;
-				PS::F64 sstar = 0.0;
-				PS::F64vec interpo = 0.0;
-				const PS::F64vec dv = ith.vel - jth.vel;
+				const PS::F64 _r = sqrt(ep_i[i].pos * ep_i[i].pos);
 
-				const PS::F64 dr_norm = sqrt(dr * dr);
-				const PS::F64vec ndir = dr / dr_norm;
+				double current_phi = getPhi(_r);
+				double current_phi_dash = getPhi_dash(_r);
+				PS::F64vec acc_factor = ep_i[i].pos / _r;
 
-				const PS::F64 s_ij = dr_norm;
-				const PS::F64 hbar_ij = .5 * (ith.smth + jth.smth);
-				const PS::F64 F_ij = (kernel.gradW_scoord(s_ij, hbar_ij)
-						/ (ith.dens * ith.dens)
-						+ kernel.gradW_scoord(s_ij, hbar_ij)
-								/ (jth.dens * jth.dens));
-
-				const PS::F64vec gradW_hi = kernel.gradW(dr, ith.smth);
-				const PS::F64vec gradW_hj = kernel.gradW(dr,
-						sqrt(2.0) * jth.smth);
-
-				calc_riemann_solver(ith, jth, sstar, delta, ndir, ith.dt, PSTAR,
-						VSTAR);
-				const PS::F64vec fac_acc = -PSTAR * F_ij * ndir;
-//				const PS::F64 fac_eng_dot = -PSTAR * (VSTAR - ith.vel_half * ndir) * F_ij;
-				PS::F64 velref = 0.0;
-//				velref = (jth.vel - ith.vel) * ndir;
-//				if ((ith.vel - jth.vel) * ndir < 0.0) {
-//					velref = (jth.vel - ith.vel) * ndir;
-//				} else {
-				velref = (VSTAR - ith.vel_half * ndir);
-//				}
-				const PS::F64 fac_eng_dot = -PSTAR * velref * F_ij;
-				hydro[i].acc += jth.mass * fac_acc;
-				hydro[i].eng_dot += jth.mass * fac_eng_dot;
+				hydro[i].acc += (PARAM::GAMMA - 1) * ith.eng * current_phi_dash
+						* acc_factor;
+				hydro[i].dt = 0.1 * ith.smth / ith.snds;
+				hydro[i].dt = fmin(hydro[i].dt,
+						0.02 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
 
 			}
-			const PS::F64 _r = sqrt(ep_i[i].pos * ep_i[i].pos);
-
-			double current_phi = getPhi(_r);
-			double current_phi_dash = getPhi_dash(_r);
-			PS::F64vec acc_factor = ep_i[i].pos / _r;
-
-			hydro[i].acc += (PARAM::GAMMA -1)*ith.eng*current_phi_dash * acc_factor;
-			hydro[i].dt = 0.1 * ith.smth / ith.snds;
-			hydro[i].dt = fmin(hydro[i].dt,
-					0.02 * sqrt(ith.smth / sqrt(ith.grav * ith.grav)));
-
 		}
-	}
 
+	}
 }
 ;
 
