@@ -184,55 +184,121 @@ public:
 			}
 		}
 	}
+//	double getPhi(double x) {
+//		//		double a = 9.999995857999977E-01;
+//		//		double b = -3.215355146247138E-04;
+//		//		double c = -1.667864474453594E-01;
+//		//		double d = 5.252845006191754E-04;
+//		//		double e = 1.155630978128144E-02;
+//		//		double f = 1.050795977407310E-03;
+//		//		double g = -1.389661348847463E-03;
+//		//		double h = 2.648078982351008E-04;
+//		//		double i = -1.692465157938468E-05;
+////		double i = 5.174e-16;
+////		double h = - 4.433e-13;
+////		double g = + 1.574e-10;
+////		double f =- 2.992e-08;
+////		double e = 3.286e-06;
+////		double d =- 0.000209;
+////		double c = 0.007358;
+////		double b = - 0.1254;
+////		double a =+ 0.7485;
+////		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+//		double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
+//		return phi;
+//
+//	}
+//	double getPhi_dash(double x) {
+//		//		double a = -3.257098683322130E-04;
+//		//		double b = -3.335390631705378E-01;
+//		//		double c = 1.494801635423298E-03;
+//		//		double d = 4.629812975807299E-02;
+//		//		double e = 5.242083986884144E-03;
+//		//		double f = -8.358773124387748E-03;
+//		//		double g = 1.867615193618750E-03;
+//		//		double h = -1.388085203319444E-04;
+//		//		double i = 2.998565502661576E-07;
+////		double i = 1.193e-16;
+////		double h = -9.659e-14;
+////		double g = +3.172e-11;
+////		double f = -5.37e-09;
+////		double e = +4.87e-07;
+////		double d = -2.107e-05;
+////		double c = +0.0001497;
+////		double b = +0.01751;
+////		double a = -0.4394;
+////		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+//		double phi = -1.47*pow(1.0 + pow(x / 2.88, 2.0), -2.47)*2.*x/(2.88*2.88);
+//
+//		return phi;
+//
+//	}
+
 	double getPhi(double x) {
-		//		double a = 9.999995857999977E-01;
-		//		double b = -3.215355146247138E-04;
-		//		double c = -1.667864474453594E-01;
-		//		double d = 5.252845006191754E-04;
-		//		double e = 1.155630978128144E-02;
-		//		double f = 1.050795977407310E-03;
-		//		double g = -1.389661348847463E-03;
-		//		double h = 2.648078982351008E-04;
-		//		double i = -1.692465157938468E-05;
-//		double i = 5.174e-16;
-//		double h = - 4.433e-13;
-//		double g = + 1.574e-10;
-//		double f =- 2.992e-08;
-//		double e = 3.286e-06;
-//		double d =- 0.000209;
-//		double c = 0.007358;
-//		double b = - 0.1254;
-//		double a =+ 0.7485;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
-		double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
-		return phi;
 
-	}
-	double getPhi_dash(double x) {
-		//		double a = -3.257098683322130E-04;
-		//		double b = -3.335390631705378E-01;
-		//		double c = 1.494801635423298E-03;
-		//		double d = 4.629812975807299E-02;
-		//		double e = 5.242083986884144E-03;
-		//		double f = -8.358773124387748E-03;
-		//		double g = 1.867615193618750E-03;
-		//		double h = -1.388085203319444E-04;
-		//		double i = 2.998565502661576E-07;
-//		double i = 1.193e-16;
-//		double h = -9.659e-14;
-//		double g = +3.172e-11;
-//		double f = -5.37e-09;
-//		double e = +4.87e-07;
-//		double d = -2.107e-05;
-//		double c = +0.0001497;
-//		double b = +0.01751;
-//		double a = -0.4394;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
-		double phi = -1.47*pow(1.0 + pow(x / 2.88, 2.0), -2.47)*2.*x/(2.88*2.88);
+			double a = 1.00019089;
 
-		return phi;
+			double b = 5.5010211E-3;
 
-	}
+			double c = -2.2942721E-1;
+
+			double d = 1.834500443E-1;
+
+			double e = -7.42164692E-2;
+
+			double f = 1.7502841144E-2;
+
+			double g = -2.42254997E-3;
+
+			double h = 1.82284488E-4;
+
+			double i = -5.753432426E-6;
+
+	 		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+	//			double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
+
+	 		return phi;
+
+
+
+		}
+
+		double getPhi_dash(double x) {
+
+			double a = 9.6683930913E-3;
+
+			double b = -4.8875582328E-1;
+
+			double c = 6.24214887E-1;
+
+			double d = -3.71983796E-1;
+
+			double e = 1.2698654729E-1;
+
+			double f = -2.619505352E-2;
+
+			double g = 3.228615492E-3;
+
+			double h = -2.189603692E-4;
+
+			double i = 6.2876169083E-6;
+
+	 		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+			//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+	//		double phi = -1.47 * pow(1.0 + pow(x / 2.88, 2.0), -2.47) * 2. * x / (2.88 * 2.88);
+
+
+
+			return phi;
+
+
+
+		}
+
+
 	void operator ()(const EPI::Hydro* const ep_i, const PS::S32 Nip, const EPJ::Hydro* const ep_j, const PS::S32 Njp, RESULT::Hydro* const hydro) {
 
 		for (PS::S32 i = 0; i < Nip; ++i) {
@@ -244,7 +310,6 @@ public:
 
 				const PS::F64vec dr = ith.pos - jth.pos;
 				const PS::F64 delta = sqrt(dr * dr);
-				if (dr != 0) {
 					PS::F64 VIJ_I, VIJ_J, PSTAR, VSTAR;
 					PS::F64 sstar = 0.0;
 					PS::F64vec interpo = 0.0;
@@ -254,21 +319,12 @@ public:
 					const PS::F64vec gradW_hi = kernel.gradW(dr, ith.smth);
 					const PS::F64vec gradW_hj = kernel.gradW(dr, sqrt(2.0) * jth.smth);
 
-//					calc_Vij2_and_ss(ith, jth, VIJ_I, VIJ_J, sstar, delta, eij);
 
-//					calc_riemann_solver(ith, jth, sstar, delta, eij, ith.dt, PSTAR, VSTAR);
-//					interpo = (PSTAR) * (gradW_hi * VIJ_I + gradW_hj * VIJ_J);
-					hydro[i].acc += -jth.mass * gradW_hi;
+					hydro[i].acc += -jth.mass * gradW_hi ;
 
-//					std::cout<<hydro[i].acc<<std::endl;
-				}
-//				std::cout << hydro[i].acc << std::endl;
 			}
 
 			hydro[i].dt = 0.1 * ith.smth / ith.snds;
-//			if (hydro[i].dt != hydro[i].dt) {
-//				std::cout << hydro[i].acc << std::endl;
-//			}
 			const PS::F64 _r = sqrt(ep_i[i].pos * ep_i[i].pos);
 			double current_phi = getPhi(_r);
 			double current_phi_dash = getPhi_dash(_r);
@@ -276,7 +332,7 @@ public:
 			//				hydro[i].acc += ( v )* acc_factor;
 //			double rc = 1;
 //			hydro[i].acc -= -1.47 * pow(1. + pow(_r / (2.88 * rc), 2), -2.47) * (_r / (1.44 * rc)) * acc_factor;
-			hydro[i].acc +=(current_phi_dash) * acc_factor;
+			hydro[i].acc +=15.45*pow(current_phi,14.45) *current_phi_dash* acc_factor -0.03* kernel.W((_r-1.5)*acc_factor,ith.smth)*acc_factor;
 
 		}
 	}

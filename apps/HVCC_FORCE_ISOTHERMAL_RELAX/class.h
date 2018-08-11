@@ -125,10 +125,20 @@ public:
 	PS::F64 eng_half;
 	PS::F64vec magneticB_half;
 	PS::F64 dt;
+	PS::F64 mu;
+	PS::F64 NUMDENS;
 	PS::S64 id;
+	PS::S64 temp;
 
 	PS::F64vec grav;
-	PS::F64 pot;
+	PS::F64 pot;	const char* scalars[PARAM::COMP + 11] = { "mass", "pres", "dens", "vx",
+			"vy", "vz", "T", "eng", "ab_e", "ab_HI", "ab_HeI", "ab_OI", "ab_CI",
+			"ab_H2", "ab_CO", "ab_HII", "ab_CII", "ab_FeII", "ab_SiII",
+			"cooling", "heating", "cooling_timescale" };
+	const char* vectors[3] = { "vel", "acc", "pos" };
+
+	PS::F64 abundances[PARAM::COMP];
+	PS::F64 old_abundances[PARAM::COMP];
 	//Copy functions
 	void copyFromForce(const RESULT::Dens& dens) {
 		this->dens = dens.dens;
@@ -148,7 +158,9 @@ public:
 		this->gradvperp_z = drvt.gradvperp_z;
 		this->div_v = drvt.div_v;
 		this->rot_v = drvt.rot_v;
-		this->Bal = fabs(drvt.div_v) / (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v) + 1.0e-4 * this->snds / this->smth); //Balsala switch
+		this->Bal = fabs(drvt.div_v)
+				/ (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v)
+						+ 1.0e-4 * this->snds / this->smth); //Balsala switch
 	}
 	void copyFromForce(const RESULT::Hydro& force) {
 		this->acc = force.acc;
@@ -181,39 +193,47 @@ public:
 		const PS::F64 radialForce_grav_mag = this->grav * radial;
 		//14
 		//15,16,17
-		fprintf(fp, "%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n", this->id, this->mass, this->smth, this->pos.x, this->pos.y, this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens, this->eng, this->pres,
-				this->MagneticB.x, this->MagneticB.y, this->MagneticB.z, radial_mag, radialForce_mag, radialForce_grav_mag);
+		fprintf(fp,
+				"%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
+				this->id, this->mass, this->smth, this->pos.x, this->pos.y,
+				this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens,
+				this->eng, this->pres, this->MagneticB.x, this->MagneticB.y,
+				this->MagneticB.z, radial_mag, radialForce_mag,
+				radialForce_grav_mag);
 	}
 	void readAscii(FILE* fp) {
 		PS::F64 radial_mag = sqrt(this->pos * this->pos);
 		PS::F64vec radial = this->pos / radial_mag;
 		PS::F64 radialForce_mag = this->acc * (radial);
 		PS::F64 radialForce_grav_mag = this->grav * radial;
-		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &this->id, &this->mass, &this->pos.x, &this->pos.y, &this->pos.z, &radial, &this->vel.x, &this->vel.y, &this->vel.z, &this->dens, &this->eng, &this->pres);
-//		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &this->id, &this->mass,&this->smth, &this->pos.x, &this->pos.y, &this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z, &this->dens, &this->eng, &this->pres, &this->MagneticB.x, &this->MagneticB.y,
-//						&this->MagneticB.z, &radial_mag, &radialForce_mag, &radialForce_grav_mag);
-
-//		std::cout << this->mass << std::endl;
+		fscanf(fp,
+				"%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf",
+				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
+				&this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z,
+				&this->dens, &this->eng, &this->pres, &this->MagneticB.x,
+				&this->MagneticB.y, &this->MagneticB.z, &radial_mag,
+				&radialForce_mag, &radialForce_grav_mag);
 
 	}
 	void readBinary(FILE *fp) {
 		static PS::S32 ONE = 1;
 		static bool is_little_endian = *reinterpret_cast<char*>(&ONE) == ONE;
 
-		PS::F64 x, y, z, vx, vy, vz, mass, dens, eng, pres, radialForce_mag, radialForce_grav_mag, radialForce_mag_ref;
+		PS::F64 x, y, z, vx, vy, vz, mass, dens, eng, pres, radialForce_mag,
+				radialForce_grav_mag, radialForce_mag_ref;
 		PS::S32 id;
 
-		fread(& this->id, sizeof(PS::S32), 1, fp);
-		fread(& this->mass, sizeof(PS::F64), 1, fp);
-		fread(& this->pos.x, sizeof(PS::F64), 1, fp);
-		fread(& this->pos.y, sizeof(PS::F64), 1, fp);
-		fread(& this->pos.z, sizeof(PS::F64), 1, fp);
-		fread(& this->vel.x, sizeof(PS::F64), 1, fp);
-		fread(& this->vel.y, sizeof(PS::F64), 1, fp);
-		fread(& this->vel.z, sizeof(PS::F64), 1, fp);
-		fread(& this->dens, sizeof(PS::F64), 1, fp);
-		fread(& this->eng, sizeof(PS::F64), 1, fp);
-		fread(& this->pres, sizeof(PS::F64), 1, fp);
+		fread(&this->id, sizeof(PS::S32), 1, fp);
+		fread(&this->mass, sizeof(PS::F64), 1, fp);
+		fread(&this->pos.x, sizeof(PS::F64), 1, fp);
+		fread(&this->pos.y, sizeof(PS::F64), 1, fp);
+		fread(&this->pos.z, sizeof(PS::F64), 1, fp);
+		fread(&this->vel.x, sizeof(PS::F64), 1, fp);
+		fread(&this->vel.y, sizeof(PS::F64), 1, fp);
+		fread(&this->vel.z, sizeof(PS::F64), 1, fp);
+		fread(&this->dens, sizeof(PS::F64), 1, fp);
+		fread(&this->eng, sizeof(PS::F64), 1, fp);
+		fread(&this->pres, sizeof(PS::F64), 1, fp);
 		fread(&radialForce_mag, sizeof(PS::F64), 1, fp);
 		fread(&radialForce_grav_mag, sizeof(PS::F64), 1, fp);
 		fread(&radialForce_mag_ref, sizeof(PS::F64), 1, fp);
@@ -274,6 +294,7 @@ public:
 class Hydro {
 public:
 	PS::F64vec pos;
+	PS::F64vec eng;
 	PS::F64vec vel;
 	PS::F64 smth;
 	PS::F64 dens;
@@ -294,6 +315,7 @@ public:
 	PS::F64vec vel_half;
 	PS::S64 id; ///DEBUG
 	void copyFromFP(const RealPtcl& rp) {
+		this->eng =rp.eng;
 		this->grav = rp.grav;
 		this->gradPT = rp.gradPT;
 		this->gradBperp2 = rp.gradBperp2;

@@ -92,7 +92,7 @@ void Initialize(PS::ParticleSystem<RealPtcl>& sph_system) {
 		sph_system[i].setPressure();
 	}
 }
-void SetupIC_PolytropeTest_file(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
+void SetupIC_BonnerEbert_Force_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
 	/////////
 	//place ptcls
 	/////////

@@ -14,84 +14,149 @@ double f1(double t, double x, double v) {
 double f2(double t, double x, double v) {
 	return -pow(x, 1.5) - 2.0 / t * v;
 }
+
 double getPhi(double x) {
-	//		double a = 9.999995857999977E-01;
-	//		double b = -3.215355146247138E-04;
-	//		double c = -1.667864474453594E-01;
-	//		double d = 5.252845006191754E-04;
-	//		double e = 1.155630978128144E-02;
-	//		double f = 1.050795977407310E-03;
-	//		double g = -1.389661348847463E-03;
-	//		double h = 2.648078982351008E-04;
-	//		double i = -1.692465157938468E-05;
-//		double i = 5.174e-16;
-//		double h = - 4.433e-13;
-//		double g = + 1.574e-10;
-//		double f =- 2.992e-08;
-//		double e = 3.286e-06;
-//		double d =- 0.000209;
-//		double c = 0.007358;
-//		double b = - 0.1254;
-//		double a =+ 0.7485;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
-	double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
-	return phi;
 
-}
-double getPhi_dash(double x) {
-	//		double a = -3.257098683322130E-04;
-	//		double b = -3.335390631705378E-01;
-	//		double c = 1.494801635423298E-03;
-	//		double d = 4.629812975807299E-02;
-	//		double e = 5.242083986884144E-03;
-	//		double f = -8.358773124387748E-03;
-	//		double g = 1.867615193618750E-03;
-	//		double h = -1.388085203319444E-04;
-	//		double i = 2.998565502661576E-07;
-//		double i = 1.193e-16;
-//		double h = -9.659e-14;
-//		double g = +3.172e-11;
-//		double f = -5.37e-09;
-//		double e = +4.87e-07;
-//		double d = -2.107e-05;
-//		double c = +0.0001497;
-//		double b = +0.01751;
-//		double a = -0.4394;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+		double a = 1.00019089;
 
-	double a1 = 1.81178953;
-	double b1 = 3.2662366;
-	double c1 = 1.11317173;
-	double phi = a1 * pow(1 + pow(x / b1, 2), -c1) * 2 * x / (b1 * b1);
+		double b = 5.5010211E-3;
 
-	return phi;
+		double c = -2.2942721E-1;
 
-}
+		double d = 1.834500443E-1;
 
-double getMass(double x) {
-	//		double a = -3.257098683322130E-04;
-	//		double b = -3.335390631705378E-01;
-	//		double c = 1.494801635423298E-03;
-	//		double d = 4.629812975807299E-02;
-	//		double e = 5.242083986884144E-03;
-	//		double f = -8.358773124387748E-03;
-	//		double g = 1.867615193618750E-03;
-	//		double h = -1.388085203319444E-04;
-	//		double i = 2.998565502661576E-07;
-	double i = -5.353e-05;
-	double h = 0.002491;
-	double g = -0.04842;
-	double f = +0.5035;
-	double e = -2.924;
-	double d = +8.333;
-	double c = -2.768;
-	double b = +0.7079;
-	double a = -0.03603;
-	double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+		double e = -7.42164692E-2;
 
-	return phi;
+		double f = 1.7502841144E-2;
 
-}
+		double g = -2.42254997E-3;
+
+		double h = 1.82284488E-4;
+
+		double i = -5.753432426E-6;
+
+ 		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+//			double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
+
+ 		return phi;
+
+
+
+	}
+
+	double getPhi_dash(double x) {
+
+		double a = 9.6683930913E-3;
+
+		double b = -4.8875582328E-1;
+
+		double c = 6.24214887E-1;
+
+		double d = -3.71983796E-1;
+
+		double e = 1.2698654729E-1;
+
+		double f = -2.619505352E-2;
+
+		double g = 3.228615492E-3;
+
+		double h = -2.189603692E-4;
+
+		double i = 6.2876169083E-6;
+
+ 		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+		//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+
+//		double phi = -1.47 * pow(1.0 + pow(x / 2.88, 2.0), -2.47) * 2. * x / (2.88 * 2.88);
+
+
+
+		return phi;
+
+
+
+	}
+
+//double getPhi(double x) {
+//	//		double a = 9.999995857999977E-01;
+//	//		double b = -3.215355146247138E-04;
+//	//		double c = -1.667864474453594E-01;
+//	//		double d = 5.252845006191754E-04;
+//	//		double e = 1.155630978128144E-02;
+//	//		double f = 1.050795977407310E-03;
+//	//		double g = -1.389661348847463E-03;
+//	//		double h = 2.648078982351008E-04;
+//	//		double i = -1.692465157938468E-05;
+////		double i = 5.174e-16;
+////		double h = - 4.433e-13;
+////		double g = + 1.574e-10;
+////		double f =- 2.992e-08;
+////		double e = 3.286e-06;
+////		double d =- 0.000209;
+////		double c = 0.007358;
+////		double b = - 0.1254;
+////		double a =+ 0.7485;
+////		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+//	double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
+//	return phi;
+//
+//}
+//double getPhi_dash(double x) {
+//	//		double a = -3.257098683322130E-04;
+//	//		double b = -3.335390631705378E-01;
+//	//		double c = 1.494801635423298E-03;
+//	//		double d = 4.629812975807299E-02;
+//	//		double e = 5.242083986884144E-03;
+//	//		double f = -8.358773124387748E-03;
+//	//		double g = 1.867615193618750E-03;
+//	//		double h = -1.388085203319444E-04;
+//	//		double i = 2.998565502661576E-07;
+////		double i = 1.193e-16;
+////		double h = -9.659e-14;
+////		double g = +3.172e-11;
+////		double f = -5.37e-09;
+////		double e = +4.87e-07;
+////		double d = -2.107e-05;
+////		double c = +0.0001497;
+////		double b = +0.01751;
+////		double a = -0.4394;
+////		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+//
+//	double a1 = 1.81178953;
+//	double b1 = 3.2662366;
+//	double c1 = 1.11317173;
+//	double phi = a1 * pow(1 + pow(x / b1, 2), -c1) * 2 * x / (b1 * b1);
+//
+//	return phi;
+//
+//}
+//
+//double getMass(double x) {
+//	//		double a = -3.257098683322130E-04;
+//	//		double b = -3.335390631705378E-01;
+//	//		double c = 1.494801635423298E-03;
+//	//		double d = 4.629812975807299E-02;
+//	//		double e = 5.242083986884144E-03;
+//	//		double f = -8.358773124387748E-03;
+//	//		double g = 1.867615193618750E-03;
+//	//		double h = -1.388085203319444E-04;
+//	//		double i = 2.998565502661576E-07;
+//	double i = -5.353e-05;
+//	double h = 0.002491;
+//	double g = -0.04842;
+//	double f = +0.5035;
+//	double e = -2.924;
+//	double d = +8.333;
+//	double c = -2.768;
+//	double b = +0.7079;
+//	double a = -0.03603;
+//	double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
+//
+//	return phi;
+//
+//}
 double fRand(double fMin, double fMax) {
 	double f = (double) rand() / RAND_MAX;
 	return fMin + f * (fMax - fMin);
@@ -99,14 +164,14 @@ double fRand(double fMin, double fMax) {
 void SetupIC_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64* end_time) {
 	std::vector<RealPtcl> ptcl;
 
-	const PS::F64 Radi = 6.5;
+	const PS::F64 Radi = 1.5;
 	*end_time = 10000;
 	const PS::F64 dx = 1 / 8;
 	PS::S32 id = 0;
-	int ptcl_num = 10000;
+	int ptcl_num = 8000;
 //	int shell_num = 8000;
 
-	double M_tot = 4.0 * M_PI * getPhi_dash(Radi) * Radi * Radi;
+	double M_tot =- 4.0 * M_PI * getPhi_dash(Radi) * Radi * Radi;
 //	double M_tot = getMass(Radi);
 //integrate [0,3] 4pi*x^2*(1+(x/2.88)^2)^-1.47
 	std::cout << "Mtot: " << M_tot << std::endl;
@@ -117,6 +182,7 @@ void SetupIC_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system,
 	for (int i = 0; i < ptcl_num; i++) {
 		double costheta = fRand(-1, 1);
 
+
 		double Radi_ = Radi * fRand(0, 1);
 		double phi = fRand(0, 2.0 * M_PI);
 		double x = Radi_ * sqrt(1. - costheta * costheta) * cos(phi);
@@ -124,18 +190,18 @@ void SetupIC_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system,
 		double z = Radi_ * costheta;
 		double r = sqrt(x * x + y * y + z * z);
 //
-		if (r >= Radi - 1.0) {
+		if (r >= Radi - 0.5 &&r <0.0001) {
 			continue;
 		}
 		RealPtcl ith;
 		ith.pos.x = x;
 		ith.pos.y = y;
 		ith.pos.z = z;
-		ith.dens = getPhi(r);
+		ith.dens =pow( getPhi(r),15.45);
 //		std::cout << "Ptcls num: " << r << std::endl;
 
 		ith.mass = mass;
-		ith.pres = .5 * pow(ith.dens, 2);
+		ith.pres = ith.dens;
 		ith.eng = 2.5;
 		ith.id = id++;
 		ptcl.push_back(ith);
@@ -200,7 +266,7 @@ void SetupIC_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system,
 	}
 }
 
-void SetupIC_PolytropeTest_file(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
+void SetupIC_BonnerEbert_Force_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
 /////////
 //place ptcls
 /////////

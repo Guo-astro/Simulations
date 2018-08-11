@@ -16,8 +16,9 @@ void FinalKick(PS::ParticleSystem<RealPtcl>& sph_system, const PS::F64 dt) {
 //		if(sqrt(sph_system[i].pos*sph_system[i].pos) >= PARAM::xi ){
 //			sph_system[i].pos = 0.001;
 //		}
-//		if(sph_system[i].pos.x != sph_system[i].pos.x){
-//			std::cout<<sph_system[i].acc<<std::endl;
-//		}
+		if(sph_system[i].dens>200){
+			const PS::S32 ind[1] = { i };
+		            			sph_system.removeParticle(ind, 1);
+		}
 	}
 }

@@ -82,7 +82,6 @@ public:
 						* kernel.gradW(dr, ith.smth) / jth.dens;
 
 				drvt[i].ngrad_dens = ndir * drvt[i].grad_dens;
-				drvt[i].ngrad_dens = ndir * drvt[i].grad_dens;
 				drvt[i].ngradP = ndir * drvt[i].gradP;
 				drvt[i].ngradPT = ndir * drvt[i].gradPT;
 				drvt[i].ngradVpara = ndir * drvt[i].gradVpara;
@@ -523,6 +522,13 @@ public:
 		const PS::F64 fac_BperpRzRP = DeltaBperpRz_mono * dod_facRRP;
 		const PS::F64 fac_densRRP = DeltaDensR_mono * dod_facRRP;
 		const PS::F64 fac_PresRRP = DeltaPresR_mono * dod_facRRP;
+
+
+
+
+
+
+
 //		//////L -> j///////////////////////////
 		PS::F64 vparaLRP = orig_vparaL + fac_velparaLRP;
 		PS::F64 BperpLxRP = orig_BperpL.x + fac_BperpLxRP;

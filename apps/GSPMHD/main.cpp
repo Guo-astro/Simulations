@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
 	//////////////////
 	dinfo.setBoundaryCondition(PS::BOUNDARY_CONDITION_PERIODIC_XYZ);
 
-//	dinfo.setPosRootDomain(PS::F64vec(0.0,0.0, 0.0), PS::F64vec(box.x,box.y,box.z));
-	dinfo.setPosRootDomain(PS::F64vec(-box.x,-box.y, 0.0), PS::F64vec(box.x,box.y,box.z));
+	dinfo.setPosRootDomain(PS::F64vec(0.0,0.0, 0.0), PS::F64vec(box.x,box.y,box.z));
+//	dinfo.setPosRootDomain(PS::F64vec(-box.x,-box.y, 0.0), PS::F64vec(box.x,box.y,box.z));
 
 	Initialize(sph_system);
 	//Dom. info

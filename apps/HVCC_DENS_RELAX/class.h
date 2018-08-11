@@ -137,7 +137,9 @@ public:
 		this->gradvperp_z = drvt.gradvperp_z;
 		this->div_v = drvt.div_v;
 		this->rot_v = drvt.rot_v;
-		this->Bal = fabs(drvt.div_v) / (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v) + 1.0e-4 * this->snds / this->smth); //Balsala switch
+		this->Bal = fabs(drvt.div_v)
+				/ (fabs(drvt.div_v) + sqrt(drvt.rot_v * drvt.rot_v)
+						+ 1.0e-4 * this->snds / this->smth); //Balsala switch
 	}
 	void copyFromForce(const RESULT::Hydro& force) {
 		this->acc = force.acc;
@@ -170,27 +172,34 @@ public:
 		const PS::F64 radialForce_grav_mag = this->grav * radial;
 		//14
 		//15,16,17
-		fprintf(fp, "%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n", this->id, this->mass, this->smth, this->pos.x, this->pos.y, this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens, this->eng, this->pres,
-				this->MagneticB.x, this->MagneticB.y, this->MagneticB.z, radial_mag, radialForce_mag, radialForce_grav_mag);
+		fprintf(fp,
+				"%lld\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\t%.16e\n",
+				this->id, this->mass, this->smth, this->pos.x, this->pos.y,
+				this->pos.z, this->vel.x, this->vel.y, this->vel.z, this->dens,
+				this->eng, this->pres, this->MagneticB.x, this->MagneticB.y,
+				this->MagneticB.z, radial_mag, radialForce_mag,
+				radialForce_grav_mag);
 	}
 	void readAscii(FILE* fp) {
 		PS::F64 radial_mag = sqrt(this->pos * this->pos);
 		PS::F64vec radial = this->pos / radial_mag;
 		PS::F64 radialForce_mag = this->acc * (radial);
 		PS::F64 radialForce_grav_mag = this->grav * radial;
-		fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf", &this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y, &this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z, &this->dens, &this->eng, &this->pres, &this->MagneticB.x,
-				&this->MagneticB.y, &this->MagneticB.z, &radial_mag, &radialForce_mag, &radialForce_grav_mag);
+		fscanf(fp,
+				"%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf",
+				&this->id, &this->mass, &this->smth, &this->pos.x, &this->pos.y,
+				&this->pos.z, &this->vel.x, &this->vel.y, &this->vel.z,
+				&this->dens, &this->eng, &this->pres, &this->MagneticB.x,
+				&this->MagneticB.y, &this->MagneticB.z, &radial_mag,
+				&radialForce_mag, &radialForce_grav_mag);
 
 //		std::cout << this->mass << std::endl;
 
 	}
 	void setPressure() {
-		// pres = (PARAM::GAMMA - 1) * dens * eng;
-//		pres = .5 * pow(dens, 2);
-		pres = dens;
-//		pres = .4 * pow(dens, PARAM::GAMMA);
-//		snds = sqrt(PARAM::GAMMA * pres / dens);
-		snds = 1;
+		pres = .5 * pow(dens, 2);
+
+		snds = sqrt(dens);
 	}
 };
 

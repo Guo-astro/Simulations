@@ -15,59 +15,48 @@ double f2(double t, double x, double v) {
 	return -pow(x, 1.5) - 2.0 / t * v;
 }
 double getPhi(double x) {
-	//		double a = 9.999995857999977E-01;
-	//		double b = -3.215355146247138E-04;
-	//		double c = -1.667864474453594E-01;
-	//		double d = 5.252845006191754E-04;
-	//		double e = 1.155630978128144E-02;
-	//		double f = 1.050795977407310E-03;
-	//		double g = -1.389661348847463E-03;
-	//		double h = 2.648078982351008E-04;
-	//		double i = -1.692465157938468E-05;
-//		double i = 5.174e-16;
-//		double h = - 4.433e-13;
-//		double g = + 1.574e-10;
-//		double f =- 2.992e-08;
-//		double e = 3.286e-06;
-//		double d =- 0.000209;
-//		double c = 0.007358;
-//		double b = - 0.1254;
-//		double a =+ 0.7485;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
-	double phi = pow(1.0 + pow(x / 2.88, 2.0), -1.47);
-	return phi;
+
+	double a = 1.000744397;
+
+	double b = 1.50738116e-2;
+
+	double c = -2.334693e-1;
+
+	double d = 7.8109735e-2;
+
+	double e = -1.021152772e-2;
+
+	double f = 4.833905487e-4;
+
+	double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5);
+
+ 	return phi;
+
+
 
 }
+
 double getPhi_dash(double x) {
-	//		double a = -3.257098683322130E-04;
-	//		double b = -3.335390631705378E-01;
-	//		double c = 1.494801635423298E-03;
-	//		double d = 4.629812975807299E-02;
-	//		double e = 5.242083986884144E-03;
-	//		double f = -8.358773124387748E-03;
-	//		double g = 1.867615193618750E-03;
-	//		double h = -1.388085203319444E-04;
-	//		double i = 2.998565502661576E-07;
-//		double i = 1.193e-16;
-//		double h = -9.659e-14;
-//		double g = +3.172e-11;
-//		double f = -5.37e-09;
-//		double e = +4.87e-07;
-//		double d = -2.107e-05;
-//		double c = +0.0001497;
-//		double b = +0.01751;
-//		double a = -0.4394;
-//		double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5) + g * pow(x, 6) + h * pow(x, 7) + i * pow(x, 8);
 
-	double a1 = 1.81178953;
-	double b1 = 3.2662366;
-	double c1 = 1.11317173;
-	double phi = a1 * pow(1 + pow(x / b1, 2), -c1) * 2 * x / (b1 * b1);
+	double a = 8.841062613e-3;
+
+	double b = -3.86087802e-1;
+
+	double c = 6.92279238e-2;
+
+	double d = 6.159126e-3;
+
+	double e = -2.44979111e-3;
+
+	double f = 1.6204056e-4;
+
+	double phi = a + b * pow(x, 1) + c * pow(x, 2) + d * pow(x, 3) + e * pow(x, 4) + f * pow(x, 5);
 
 	return phi;
 
-}
 
+
+}
 
 double getMass(double x) {
 	//		double a = -3.257098683322130E-04;
@@ -201,7 +190,7 @@ void SetupIC_Polytrope_Dens_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system,
 	}
 }
 
-void SetupIC_PolytropeTest_file(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
+void SetupIC_BonnerEbert_Force_Relaxation(PS::ParticleSystem<RealPtcl>& sph_system, PS::F64 *end_time) {
 /////////
 //place ptcls
 /////////

@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
 	PS::F64 dt, end_time;
 //	SetupIC_Polytrope_Dens_Relaxation(sph_system, &end_time);
-	SetupIC_Restart_Polytrope_Dens_Relaxation(sph_system, &end_time);
+	SetupIC_BonnerEbert_Force_Relaxation(sph_system, &end_time);
 	dinfo.initialize();
 
 	//////////////////
@@ -53,12 +53,12 @@ int main(int argc, char* argv[]) {
 	PS::TreeForForceShort<RESULT::Dens, EPI::Dens, EPJ::Dens>::Gather dens_tree;
 //	PS::TreeForForceShort<RESULT::Drvt, EPI::Drvt, EPJ::Drvt>::Gather drvt_tree;
 	PS::TreeForForceShort<RESULT::Hydro, EPI::Hydro, EPJ::Hydro>::Symmetry hydr_tree;
-	PS::TreeForForceLong <RESULT::Grav , EPI::Grav , EPJ::Grav >::Monopole grav_tree;
+//	PS::TreeForForceLong <RESULT::Grav , EPI::Grav , EPJ::Grav >::Monopole grav_tree;
 
 	dens_tree.initialize(sph_system.getNumberOfParticleGlobal());
 //	drvt_tree.initialize(sph_system.getNumberOfParticleGlobal());
 	hydr_tree.initialize(sph_system.getNumberOfParticleGlobal());
-	grav_tree.initialize(sph_system.getNumberOfParticleGlobal());
+//	grav_tree.initialize(sph_system.getNumberOfParticleGlobal());
 
 	for (int loop = 0; loop <= 5; ++loop) {
 		dens_tree.calcForceAllAndWriteBack(CalcDensity(), sph_system, dinfo);

@@ -2,7 +2,7 @@ PS_PATH = -I ../../src/
 
 CC = time g++
 #CC = mpic++-mpich-gcc49
-CFLAGS = -O3
+CFLAGS = -g
 #CFLAGS += -ffast-math
 CFLAGS += -funroll-loops -DOUTPUT_VTK
 #CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL

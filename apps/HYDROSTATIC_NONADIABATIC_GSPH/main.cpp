@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	boundary box;
 	PS::F64 dt, end_time;
 //	SetupIC_BLASTWAVE(sph_system, &end_time,&box);
-	SetupIC_PolytropeTest_file(sph_system, &end_time);
+	SetupIC_BonnerEbert_Force_Relaxation(sph_system, &end_time);
 	dinfo.initialize();
 
 	//////////////////
